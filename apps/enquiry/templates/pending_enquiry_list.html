@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}Enquiry Details{% endblock title %}
+
+{% block breadcrumb %}
+<a class="btn btn-primary" href="{% url 'enquiry-create' %}"><i
+    class="fas fa-plus"></i> New Enquiry</a>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>Enquiry No</th>
+          <th>Enquiry Date</th>
+          <th>Fullname</th>
+          <th>Mobile No</th>
+          <th>Intersted Course</th>
+          <th>Verified</th>
+          <th>Admit</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for student in Enquiry %}
+          <tr class='clickable-row' data-href="{% url 'pending-enquiry-update' student.auto_increment %}">
+            <td>{{ student.enquiry_no}}</td>
+            <td>{{ student.enquiry_date }}</td>
+            <td>{{ student.name}}</td>
+            <td>{{ student.mobile_number}}</td>
+            <td>{{student.course_to_join}}</td>
+            <td>{% if student.verfied %}
+              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="36" height="36" viewBox="0,0,256,256"
+style="fill:#40C057;">
+<g fill="#40c057" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(3.55556,3.55556)"><path d="M57.658,12.643c1.854,1.201 2.384,3.678 1.183,5.532l-25.915,40c-0.682,1.051 -1.815,1.723 -3.064,1.814c-0.098,0.008 -0.197,0.011 -0.294,0.011c-1.146,0 -2.241,-0.491 -3.003,-1.358l-13.051,-14.835c-1.459,-1.659 -1.298,-4.186 0.36,-5.646c1.662,-1.46 4.188,-1.296 5.646,0.361l9.563,10.87l23.043,-35.567c1.203,-1.854 3.68,-2.383 5.532,-1.182z"></path></g></g>
+</svg>
+              {% else %}
+              <img width="36" height="36" src="https://img.icons8.com/sf-black-filled/64/FA5252/x.png" alt="x"/>
+{% endif %}
+            </td>
+            <td><a href="{% url 'student-enquiry-create' student.auto_increment %}"><input type="button" class="btn btn-sm btn-primary" value="Admit"></a></td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}
+
+
+{% block morejs %}
+<script>
+  $('#studenttable').DataTable({
+  });
+  
+</script>
+
+{% endblock morejs %}

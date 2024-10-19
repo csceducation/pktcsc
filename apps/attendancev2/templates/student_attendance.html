@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-9">
+                <h1 class="d-inline">Daily Attendance for Students</h1>
+            </div>
+            <div class="col-3 text-end">
+                <a href="{% url 'router' %}" class="btn btn-info shadow-sm">Return to Dashboard</a>
+            </div>
+        </div>
+
+        <h2>Date: {{ date }}</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            <table class="table table-bordered mt-3">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Status</th>
+                        <th>Entry Time</th>
+                        <th>Exit Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in students_data %}
+                    <tr>
+                        <td>{{ student.name }}</td>
+                        <td>
+                            <select name="status_{{ student.student_id }}" id="status_{{ student.student_id }}" class="form-control status-select" style="max-width: 200px;">
+                                <option value="absent" {% if not student.entry_time and not student.exit_time %}selected{% endif %}>Absent</option>
+                                <option value="present" {% if student.entry_time or student.exit_time %}selected{% endif %}>Present</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="time" id="entry_time_{{ student.student_id }}" name="entry_time_{{ student.student_id }}" value="{{student.entry_time}}" class="form-control" style="max-width: 200px;">
+                        </td>
+                        <td>
+                            <input type="time" id="exit_time_{{ student.student_id }}" name="exit_time_{{ student.student_id }}" value="{{student.exit_time }}" class="form-control" style="max-width: 200px;">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-info mt-3">Update Attendance</button>
+        </form>
+        
+        <h2 class="mt-5">Previous Attendance Data:</h2>
+        <table class="table table-bordered mt-3">
+            <thead class="thead-light">
+                <tr>
+                    <th>Student Name</th>
+                    <th>Status</th>
+                    <th>Entry Time</th>
+                    <th>Exit Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students_data %}
+                <tr>
+                    <td>{{ student.name }}</td>
+                    <td>{% if student.status %}
+                        {{ student.status }}
+                    {% else %}
+                        --
+                    {% endif %}</td>
+                    <td>
+                        {% if student.entry_time %}
+                            {{ student.entry_time }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if student.exit_time %}
+                            {{ student.exit_time }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </td>
+                    <td> <!-- New Column for Delete Button -->
+                        <form method="post" action="{% url 'delete_student_attendance' student_id=student.student_id date=date %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to enable/disable entry and exit time based on status selection
+        function handleStatusChange(select) {
+            const entryTimeInput = select.parentElement.nextElementSibling.querySelector("input[type='time']");
+            const exitTimeInput = select.parentElement.nextElementSibling.nextElementSibling.querySelector("input[type='time']");
+            
+            if (select.value === "present") {
+                entryTimeInput.removeAttribute("disabled");
+                exitTimeInput.removeAttribute("disabled");
+            } else {
+                entryTimeInput.setAttribute("disabled", true);
+                exitTimeInput.setAttribute("disabled", true);
+            }
+        }
+    
+        document.addEventListener("DOMContentLoaded", function() {
+            const statusSelects = document.querySelectorAll(".status-select");
+            
+            statusSelects.forEach(function(select) {
+                handleStatusChange(select);
+    
+                select.addEventListener("change", function() {
+                    handleStatusChange(select);
+                });
+            });
+        });
+    </script>
+
+{% endblock content %}

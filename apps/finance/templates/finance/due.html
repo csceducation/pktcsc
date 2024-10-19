@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <h1 class="mt-5">Add Dues</h1>
+    <form id="duesForm" method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="numDues">Number of Dues:</label>
+            <input type="number" class="form-control" id="numDues" name="numDues" min="1" required>
+        </div>
+        <button type="button" class="btn btn-primary mb-3" onclick="generateDuesFields()">Generate Dues</button>
+
+        <div id="duesContainer">
+            <!-- Dues will be added dynamically here -->
+        </div>
+
+        <!-- Hidden input field to store the JSON data -->
+        <input type="hidden" id="duesData" name="duesData">
+
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+</div>
+
+<script>
+    // Dues data provided by the backend
+    const duesData = {{ dues|safe }};
+    console.log("Dues Data:", duesData);
+    
+    function generateDuesFields() {
+        const numDues = parseInt(document.getElementById('numDues').value);
+
+        const container = document.getElementById('duesContainer');
+        container.innerHTML = ''; // Clear previous fields
+
+        // Create a table element
+        const table = document.createElement('table');
+        table.classList.add('table', 'table-bordered', 'mt-3');
+
+        // Create table header
+        const header = table.createTHead();
+        const headerRow = header.insertRow();
+        headerRow.innerHTML = `
+            <th>Due</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Status</th>
+        `;
+
+        // Create table body
+        const body = table.createTBody();
+        for (let i = 1; i <= numDues; i++) {
+            const row = body.insertRow();
+            row.innerHTML = `
+                <td>Due ${i}</td>
+                <td><input type="date" class="form-control" name="date_${i}" value="${duesData[i - 1].date}" required></td>
+                <td><input type="number" class="form-control" name="amount_${i}" value="${duesData[i - 1].amount}" required></td>
+                <td><input type="text" class="form-control" name="status_${i}" value="${duesData[i - 1].status}" required></td>
+            `;
+        }
+
+        // Append the table to the container
+        container.appendChild(table);
+    }
+
+    document.getElementById('duesForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const dues = {};
+
+        const numDues = parseInt(document.getElementById('numDues').value);
+        for (let i = 1; i <= numDues; i++) {
+            const date = document.getElementsByName(`date_${i}`)[0].value;
+            const amount = document.getElementsByName(`amount_${i}`)[0].value;
+            const status = document.getElementsByName(`status_${i}`)[0].value;
+
+            dues[i] = {
+                date: date,
+                amount: amount,
+                status: status
+            };
+        }
+
+        // Convert dues object to JSON
+        const duesJSON = JSON.stringify(dues);
+
+        // Set the JSON data to the hidden input field
+        document.getElementById('duesData').value = duesJSON;
+
+        // Submit the form
+        this.submit();
+    });
+
+    // Generate fields on page load if dues data is provided
+    if (duesData && duesData.length > 0) {
+    
+        document.getElementById('numDues').value = duesData.length;
+        generateDuesFields();
+    }
+</script>
+
+{% endblock content %}

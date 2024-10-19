@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class = "my-4">
+<form id="staff-select-form" class="form-inline">
+    <div class="form-group">
+        <label for="staff-select" class="mr-2">Select Staff:</label>
+        <select id="staff-select" name="staff" class="form-control mr-2">
+            <option value="">Select Staff</option>
+            {% for staff in staff_list %}
+                <option value="{{ staff.id }}">{{ staff.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-info">Select</button>
+</form>
+</div>
+
+
+<div class="container">
+    <h2>Data Table</h2>
+    <!-- Table -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Batch</th>
+                <th>Date</th>
+                <th>Content</th>
+                <th>Total Count</th>
+                <th>Total Present</th>
+                <th>Total Absent</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for batch, dates in data_for_staff.items %}
+                {% for date, data in dates.items %}
+                
+                    <tr>
+                        {% if forloop.first %}
+                            <td rowspan="{{ dates|length }}">{{ batch }}</td>
+                        {% endif %}
+                        <td>
+                            <a href="#" class="date-link" data-batch="{{ data.batch_id }}" data-date="{{ date }}">{{ date }}</a>
+                            <!-- Hidden input field to store batch_id -->
+                            <input type="hidden" class="batch-id" value="{{ data.batch_id }}">
+                        </td>
+                        <td>{{ data.content }}</td>
+                        <td>{{ data.total_count }}</td>
+                        <td>{{ data.total_present }}</td>
+                        <td>{{ data.total_absent }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<hr class="my-5">
+
+
+<form id="batch-date-form" class="form-inline">
+    <div class="form-group mr-2">
+        <label for="batch-select" class="mr-2">Select Batch:</label>
+        <select id="batch-select" name="batch" class="form-control selectpicker mr-2" data-live-search="true">
+            <option value="">Select Batch</option>
+            <!-- Assume batch_list is a Django variable containing a list of batches -->
+            {% for batch in batch_list %}
+                <option value="{{ batch.id }}">{{ batch.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group mr-2">
+        <label for="date-input" class="mr-2">Select Date:</label>
+        <input type="date" id="date-input" name="date" class="form-control mr-2">
+    </div>
+    <button type="submit" class="btn btn-primary">Select</button>
+</form>
+
+<hr class="my-5">
+{% if specific_date %}
+<div class="container">
+    <h2 style="font-family: Arial, sans-serif; font-size: 24px; font-weight: bold;">Data Table</h2>
+    <!-- Display batch, entry time, exit time, and content outside the table -->
+    <div class="row">
+        <div class="col-md-6" style="font-family: Arial, sans-serif;">
+            <p><strong>Batch:</strong> <span style="font-style: italic;">{{ specific_date.batch_id }}</span></p>
+            <p><strong>Entry Time:</strong> <span style="font-style: italic;">{{ specific_date.entry_time }}</span></p>
+            <p><strong>Exit Time:</strong> <span style="font-style: italic;">{{ specific_date.exit_time }}</span></p>
+            <p><strong>Content:</strong> <span style="font-style: italic;">{{ specific_date.content }}</span></p>
+        </div>
+    </div>
+    
+    <!-- Display students data in a table inside the container -->
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table" style="font-family: Arial, sans-serif; border-collapse: collapse; border: 2px solid black;">
+                <thead>
+                    <tr style="background-color: #f2f2f2; border-bottom: 2px solid black;">
+                        <th style="padding: 10px; border-right: 2px solid black;">Student ID</th>
+                        <th style="padding: 10px; border-right: 2px solid black;">Name</th>
+                        <th style="padding: 10px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student_id, student_data in specific_date.students.items %}
+                        <tr style="border-bottom: 1px solid black;">
+                            <td style="padding: 10px; border-right: 2px solid black;">{{ student_id }}</td>
+                            <td style="padding: 10px; border-right: 2px solid black;">{{ student_data.name }}</td>
+                            <td style="padding: 10px;">{{ student_data.status }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+
+
+<script>
+        var form = document.getElementById("batch-date-form");
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Get the selected batch and date
+            var selectedBatchId = document.getElementById("batch-select").value;
+            var selectedDate = document.getElementById("date-input").value;
+
+            // Get existing staff_id parameter
+            var urlParams = new URLSearchParams(window.location.search);
+            var staffId = urlParams.get("staff_id");
+
+            // Construct the new URL with updated parameters
+            var url = new URL(window.location.href);
+            url.searchParams.set("batch", selectedBatchId);
+            url.searchParams.set("date", selectedDate);
+            url.searchParams.set("staff_id", staffId);
+
+            // Redirect to the new URL
+            window.location.href = url.toString();
+        });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle form submission
+        var form = document.getElementById("staff-select-form");
+        form.addEventListener("submit", function(event) {
+            event.preventDefault();
+            var selectedStaffId = this.querySelector("#staff-select").value;
+            // Get the current URL
+            var url = new URL(window.location.origin + window.location.pathname);
+            // Add the staff_id parameter
+            url.searchParams.set("staff_id", selectedStaffId);
+            // Redirect to the new URL
+            window.location.href = url.toString();
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Handle click event on date links
+        var dateLinks = document.querySelectorAll(".date-link");
+        dateLinks.forEach(function(link) {
+            link.addEventListener("click", function(event) {
+                event.preventDefault();
+                var batchId = this.getAttribute("data-batch");
+                var date = this.getAttribute("data-date");
+                var batchInput = this.closest("tr").querySelector(".batch-id").value;
+                // Get the current URL
+                var url = new URL(window.location.href);
+                // Update or add batch_id parameter to URL
+                url.searchParams.set("batch_id", batchInput);
+                // Update or add date parameter to URL
+                url.searchParams.set("date", date);
+                // Modify the URL without replacing it
+                window.location.href = url.toString();
+            });
+        });
+    });
+</script>
+
+{% endblock content %}

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block scriptORstyle %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+{% endblock scriptORstyle %}
+
+{% block content %}
+<div >
+  <!-- Trigger the modal with a button -->
+  <div class="row">
+    <div class="col-10">
+        <h1>Existing Labs</h1>
+    </div>
+    <div class="col-2">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#myModal">Add Lab</button>
+  </div>    
+</div>
+
+    <div class="table-responsive">
+        <table id="labtable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>S/N</th>
+              <th>{{lab.lab_no}}</th>
+              <th>Details link</th>
+              <th>Delete link</th>
+              <th>Go to attendance Page</th>
+              <th>Visit Dashboard</th>
+            </tr>
+          </thead>
+          <tbody>
+    
+            {% for lab in labs %}
+              <tr >
+                <td>{{ forloop.counter}}</td>
+                <td>{{ lab.lab_no}}</td>
+                <td><a href="{% url 'lab_details' lab.id %}" class="btn btn-info">Edit Systems</a></td>
+                <td><a href="{% url 'delete_lab' lab.id %}" class="btn btn-danger">delete</a></td>
+                <td>
+                  <a href="{% url 'add_lab_attendance' lab.id %}" class="btn btn-light">Manage Attendance</a>
+                </td>
+                <td>
+                  <a href="{% url 'lab_dashboard' lab.id %}" class="btn btn-light">Go to Dashboard</a>
+                </td>
+              </tr>
+            {% endfor %}
+    
+          </tbody>
+        </table>
+      </div>
+
+
+
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+    
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Lab Form</h4>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'add_labs' %}" >
+                {% csrf_token %}
+            <input type="text" name="lab_no" class="form-control" placeholder="Enter a name for the lab (10 characters)">
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+</div>
+
+{% endblock content %}

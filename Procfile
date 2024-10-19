@@ -1,0 +1,1 @@
+web: gunicorn csc_app.wsgi

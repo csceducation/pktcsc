@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-3">
+  <div class="col-sm-8 mx-auto">
+    <table class="table table-sm table-bordered">
+      Last Bill Details</br>
+      <tbody>
+        <tr>
+          <td>Enrolement Number</td>
+          <td>{{ last_receipt.invoice.student.enrol_no }} </td>
+          </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td>Bill Number</td>
+          <td>{{ last_receipt.Bill_No}}</td>
+        </tr>
+        <tr>
+          <td>Amount Paid</td>
+          <td>{{ last_receipt.amount_paid | intcomma}}</td>
+        </tr>
+
+      </tfoot>
+    </table>
+  </div>
+    <h2>Enter Bill Details</h2>
+    <form method="post" action="{% url 'bill' %}">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="student">Studnet:</label>
+        {% if  due == "None" %}
+        <input type="text" name="student" id="student" class="form-control" required list="enquiry-list"  autocomplete="off">
+          <datalist id="enquiry-list">
+            {% for enquiry in stu %}
+              <option value="{{ enquiry.student_name }}({{enquiry.enrol_no}}) {{ enquiry.id }}"></option>
+            {% endfor %}
+          </datalist>
+        {% else %}
+        <input type="text" name="student" id="student" class="form-control" required list="enquiry-list" value="{{ due.invoice.student.student_name}}({{due.invoice.student.enrol_no}}) {{ due.invoice.student.id }}"  autocomplete="off">
+          <datalist id="enquiry-list">
+            <option value="{{ due.invoice.student.student_name}}({{due.invoice.student.enrol_no}}) {{ due.invoice.student.id }}"></option>
+          </datalist>
+        {% endif %}
+      </div> 
+
+      <div class="form-group">
+        <label for="bill_number">Bill Number:</label>
+        <input type="text" name="bill_number" id="bill_number" placeholder = "input bill no as starts with bill prefix" class="form-control" value="{{bill.prefix}}{{next_no}}" required>
+      </div>
+  
+      <div class="form-group">
+        <label for="bill_date">Bill Date:</label>
+        <input type="date" name="bill_date" id="bill_date" class="form-control" required>
+      </div>
+  
+      <div class="form-group">
+        <label for="amount">Amount:</label>
+        <input type="number" name="amount" id="amount" class="form-control" value="{{due.amount}}" required>
+      </div>
+
+      <div class="form-group">
+        {% if request.user.is_superuser %}
+        <label for="recived_by">Recived_by:</label>
+        <input type="number" placeholder="Enter Billing Staff ID" name="recived_by" id="recived_by" class="form-control" required>
+        {% elif request.user.is_staff %}
+        <input type="number" placeholder="Enter Billing Staff ID" name="recived_by" id="recived_by" class="form-control" hidden>
+        {% endif %}
+      </div>
+      <div class="form-group">
+        <label for="comment">Remark:</label>
+        <input type="text" name="comment" id="comment" class="form-control">
+      </div>
+
+      <input type="hidden" name="due_id" id="due_id">
+
+      <div class="form-group">
+        <label for="next_amount">Amount for next due (leave empty if no more dues):</label>
+        <input type="number" id="next_amount" name="next_amount" placeholder="Enter amount" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="next_due_date">Due Date for next due (leave empty if no more dues):</label>
+        <input type="date" class="form-control" id="next_due_date" name="next_due_date" >
+    </div>
+  
+      <button type="submit" id="changeit" class="btn btn-primary">Save</button>
+    </form>
+
+    
+  <div id="student-dues" class="mt-3">
+    <h2 class="text-center font-weight-bold">Student Dues</h2>
+    <!-- Student dues will be displayed here -->
+  </div>
+
+
+  </div>
+  <script>
+    {% if messages %}
+
+      {% for message in messages %}
+        alert("{{ message }}");
+      {% endfor %}
+    {% endif %}
+  document.getElementById('student').addEventListener('input', function() {
+    var selectedOption = document.querySelector('#enquiry-list option[value="' + document.getElementById('student').value + '"]');
+    
+    if (selectedOption) {
+      var inputText = document.getElementById('student').value;
+      var match = inputText.match(/\d+$/);
+      
+      if (match) {
+        var studentId = match[0];
+        fetchStudentDues(studentId);
+      } else {
+        console.log("No numbers found at the end of the text");
+      }
+    }
+  });
+
+  document.getElementById('changeit').addEventListener('click', function(event) {
+    var selectedOption = document.querySelector('#enquiry-list option[value="' + document.getElementById('student').value + '"]');
+    
+    if (selectedOption) {
+      var inputText = document.getElementById('student').value;
+      var match = inputText.match(/\d+$/);
+      
+      if (match) {
+        var lastNumbers = match[0];
+        document.getElementById('student').value = lastNumbers;
+        console.log(lastNumbers);
+      } else {
+        console.log("No numbers found at the end of the text");
+      }
+      
+      return true;
+    } else {
+      event.preventDefault();
+      alert('Please select a valid option from the list.');
+      return false;
+    }
+  });
+
+  function fetchStudentDues(studentId) {
+    fetch(`/finance/student-dues/${studentId}/`)
+        .then(response => response.json())
+        .then(data => {
+            var duesContainer = document.getElementById('student-dues');
+            duesContainer.innerHTML = ''; // Clear previous dues
+
+            if (data && data.length > 0) {
+                data.forEach(due => {
+                    var dueElement = document.createElement('div');
+                    dueElement.className = 'alert alert-info';
+dueElement.innerHTML = `
+    <style>
+        .due-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #ccc;
+        }
+        .due-item:last-child {
+            border-bottom: none;
+        }
+        .due-item strong {
+            display: inline-block;
+            width: 120px;
+        }
+    </style>
+    <div class="due-item">
+        <strong>Amount:</strong> ${due.amount ? due.amount : "No Dues"}
+    </div>
+    <div class="due-item">
+        <strong>Due Date:</strong> ${due.due_date ? due.due_date : "No Dues"}
+    </div>
+    <div class="due-item">
+        <strong>Total Fee:</strong> ${due.total_amount}
+    </div>
+    <div class="due-item">
+        <strong>Paid:</strong> ${due.paid}
+    </div>
+    <div class="due-item">
+        <strong>Balance:</strong> ${due.balance}
+    </div>
+`;
+
+                    duesContainer.appendChild(dueElement);
+                });
+            } else {
+                var noDuesElement = document.createElement('div');
+                noDuesElement.className = 'alert alert-warning';
+                noDuesElement.innerText = 'No dues found for the selected student.';
+                duesContainer.appendChild(noDuesElement);
+            }
+        })
+        .catch(error => console.error('Error fetching student dues:', error));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var dueDateStr = '{{ due.due_date }}'; 
+  
+  if (dueDateStr) {
+    var dueDateObj = new Date(dueDateStr); 
+    var formattedDate = dueDateObj.toISOString().slice(0, 10); 
+    
+    document.getElementById('bill_date').value = formattedDate;
+  }
+});
+
+
+
+</script>
+
+{% endblock content %}

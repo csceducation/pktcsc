@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static%}
+   <link rel="stylesheet" href="{% static 'dist/css/student_dashboard.css'  %}">
+   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200&display=swap" rel="stylesheet">
+   
+{% block content %}
+<style>
+    .dashboard {
+       
+        width: 100%;
+        height: 401px;
+        color:blue;
+        paddind:3px 0 0 0;
+
+    }
+    .student{
+        display:flex;
+    }
+    
+    
+   
+    .firstimage {
+        width: 129px;
+        height: 123px;
+        background-color: #fffefe;
+        box-shadow: 0px 0px 8px 3px #0F52A8;
+        margin: 23px 0 0 179px;
+        border-radius:15px;
+        border:5px solid #57616D;
+    }
+    
+    .firstimages {
+        width: 129px;
+        height: 123px;
+        background-color: #fffefe;
+        box-shadow: 0px 0px 8px 3px #0F52A8;
+        margin: 74px 0 0 179px;
+        border-radius:15px;
+        border:5px solid #57616D;
+    }
+
+    .secondimage {
+        width: 145px;
+        height: 119px;
+        background-color: #fffefe;
+        box-shadow: 0px 0px 8px 3px #0F52A8;
+        margin: 23px 0 0 204px;
+        border-radius:15px;
+        border:5px solid #57616D;
+    }
+    .secondimages {
+        width: 145px;
+        height: 119px;
+        background-color: #fffefe;
+        box-shadow: 0px 0px 8px 3px #0F52A8;
+        margin: 74px 0 0 204px;
+        border-radius:15px;
+        border:5px solid #57616D;
+    }
+    .enquiry {
+        color:red;
+        font-size: 17px;
+        margin: 0 0 0 213px;
+        font-weight: 900;
+    }
+  
+    .enquirys {
+        color: #0F52A8;
+        font-size: 17px;
+        margin: 0 0 0 234px;
+        font-weight: 900;
+    }
+
+    .enquiryss {
+        color: #0F52A8;
+        font-size: 17px;
+        margin: 0 0 0 185px;
+        font-weight: 900;
+    }
+
+    @media screen and (max-width: 600px) {
+        .student {
+          background-color: lightblue;
+          display:block;
+        }
+
+
+        .firstimage {
+            width: 129px;
+            height: 123px;
+            background-color: #fffefe;
+            box-shadow: 0px 0px 8px 3px #0F52A8;
+            margin: 23px 0 0 58px;
+            border-radius: 15px;
+            border: 5px solid #57616D;
+        }
+
+        .enquiry {
+            color: red;
+            font-size: 17px;
+            margin: 0 0 0 92px;
+            font-weight: 900;
+        }
+        .enquirys {
+            color: red;
+            font-size: 17px;
+            margin: 0 0 0 92px;
+            font-weight: 900;
+        }
+        .enquiryss {
+            color: red;
+            font-size: 17px;
+            margin: 0 0 0 73px;
+            font-weight: 900;
+        }
+        
+    
+        .firstimages {
+            width: 129px;
+            height: 123px;
+            background-color: #fffefe;
+            box-shadow: 0px 0px 8px 3px #0F52A8;
+            margin: 23px 0 0 58px;
+            border-radius: 15px;
+            border: 5px solid #57616D;
+        }
+
+        .secondimage {
+            width: 129px;
+            height: 123px;
+            background-color: #fffefe;
+            box-shadow: 0px 0px 8px 3px #0F52A8;
+            margin: 23px 0 0 58px;
+            border-radius: 15px;
+            border: 5px solid #57616D;
+        }
+
+     
+        .secondimages {
+            width: 145px;
+            height: 119px;
+            background-color: #fffefe;
+            box-shadow: 0px 0px 8px 3px #0F52A8;
+            margin: 74px 0 0 58px;
+            border-radius:15px;
+            border:5px solid #57616D;
+        }
+        .dashboard {
+       
+            width: 100%;
+            height: 727px;
+            color:blue;
+            paddind:3px 0 0 0;
+    
+        }
+      
+      }
+</style>
+<div class=" dashboard">
+    
+    <div class=" student">
+        <div class="" >
+            <a href="{% url 'enquiry-index' %}">
+            <img class="firstimage"   src="https://cdn-icons-png.flaticon.com/512/7039/7039285.png"><br>
+             <a class="enquiry">Enquiry</a></a>
+        </div>
+        
+        <div> 
+            <a href="{% url 'select_enquiry' %}">    
+        <img class="secondimage"   src="https://cdn-icons-png.flaticon.com/512/8233/8233807.png">
+        <br>
+        <a class="enquirys">Admission</a></a>
+        </div>
+    </div>
+
+    <div class="student">
+        <div >
+            <a href="{% url 'student-list' %}">
+            <img class="firstimages"   src="https://cdn-icons-png.flaticon.com/512/8934/8934724.png"><br>
+             <a class="enquiryss">Student Details</a></a>
+        </div>
+        
+        <div>   
+            <a href="{% url 'lab_list' %}">  
+        <img class="secondimages"   src="https://cdn-icons-png.flaticon.com/512/13105/13105500.png">
+        <br>
+        <a class="enquirys">Attendance</a></a>
+        </div>
+    </div>
+
+    <div>
+  
+</div>
+{% endblock %}
+
+
+
+
+

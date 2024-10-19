@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block scriptORstyle %}
+<style>
+    .input-group {
+        position: relative;
+    }
+
+    .user-list {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 200px;
+        overflow-y: auto;
+        background-color: white;
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        z-index: 1000;
+    }
+
+    .user-list-item {
+        padding: 0.5rem;
+        cursor: pointer;
+    }
+
+    .user-list-item:hover {
+        background-color: #f0f0f0;
+    }
+
+    @media (max-width: 768px) {
+        .col-md-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+{% endblock scriptORstyle %}
+
+{% block content %}
+<div >
+    <div class="row">
+      <div class="col-10">
+          <h1>System Access Form</h1>
+      </div>
+      <div class="col-2">
+      <a href="{% url 'lab_list' %}" class="btn btn-info" >return to labs</a>
+    </div>    
+  </div>
+    <form id="searchForm" class="mt-4">
+        <div class="row">
+          <div class="col-md-8">
+            <input type="text" id="searchInput" class="form-control" name="searchInput" placeholder="Search ID">
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Search</button>
+          </div>
+        </div>
+      </form>
+  </div>
+{% for system in systems %}
+    <div class="container mt-5" id="{{system}}">
+        <form id="studentForm{{ system }}" class="row g-3 system-form" method="POST">
+            {% csrf_token %}
+            <div class="col-md-3">
+                <input type="text" value="{{ system }}" name="system_no" hidden>
+                <label for="searchInput{{ system }}" class="visually-hidden">Search</label>
+                <input type="text" id="searchInput{{ system }}" class="form-control" placeholder="Search by ID or Name">
+                <div id="userList{{ system }}" class="user-list d-none"></div>
+            </div>
+            <div class="col-md-3">
+                <label for="selectedStudentId{{ system }}" class="form-label">Selected Student ID</label>
+                <input type="text" id="selectedStudentId{{ system }}" name="enrol_no" class="form-control" readonly>
+            </div>
+            <div class="col-md-2">
+                <label for="entryTime{{ system }}" class="form-label">Entry Time</label>
+                <input type="time" id="start_time{{ system }}" class="form-control" name="start_time" required step="1800">
+            </div>
+            <div class="col-md-2">
+                <label for="exitTime{{ system }}" class="form-label">Exit Time</label>
+                <input type="time" id="end_Time{{ system }}" name="end_time" class="form-control" required step="1800">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="container mt-4">
+        <h1 class="font-weight-normal">Attendance for {{system}}</h1>
+        <div class = "table-responsive mt-3">
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for system_, data in system_data_dict.items %}
+                    {% if system_ == system and data is not None %}
+                        {% for student_id, time_data in data.data.items %}
+                        {% if student_id != "not available" %}
+                            <tr>
+                                <td>{{ student_id }}</td>
+                                <td>{{ time_data.start }}</td>
+                                <td>{{ time_data.stop }}</td>
+                                <td>
+                                    <a href ="{% url 'data_delete' student_id=student_id lab_id=lab_no date=date system_no=system_ %}" class="btn btn-danger btn-sm">Delete</a>
+                                    {% comment %}<a href ="{% url 'data_delete' student_id=student_id lab_id=lab_no date=date system_no=system_ %}" class="btn btn-danger btn-sm">Delete</a>{% endcomment %}
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <hr class = "shadow-lg">
+    
+
+{% endfor %}
+<script>
+    const students = {{ students|safe }};
+
+    document.querySelectorAll('.system-form').forEach(form => {
+        const system = form.querySelector('input[name="system_no"]').value;
+        const searchInput = form.querySelector(`#searchInput${system}`);
+        const userList = form.querySelector(`#userList${system}`);
+        const selectedStudentIdInput = form.querySelector(`#selectedStudentId${system}`);
+
+        function populateUserList(searchText) {
+            userList.innerHTML = "";
+            const filteredStudents = students.filter(student =>
+                student.id.toString().includes(searchText) || student.name.toLowerCase().includes(searchText.toLowerCase())
+            );
+
+            filteredStudents.forEach(student => {
+                const listItem = document.createElement("div");
+                listItem.classList.add("user-list-item");
+                listItem.textContent = student.name;
+                listItem.addEventListener("click", function() {
+                    selectedStudentIdInput.value = student.id;
+                    searchInput.value = student.name;
+                    userList.classList.add("d-none");
+                });
+                userList.appendChild(listItem);
+            });
+
+            if (filteredStudents.length === 0) {
+                const listItem = document.createElement("div");
+                listItem.classList.add("user-list-item");
+                listItem.textContent = "No matching students";
+                listItem.classList.add("disabled");
+                userList.appendChild(listItem);
+            }
+
+            userList.classList.remove("d-none");
+        }
+
+        searchInput.addEventListener("input", function() {
+            const searchText = this.value.trim();
+            populateUserList(searchText);
+        });
+
+        document.addEventListener("click", function(event) {
+            if (!userList.contains(event.target) && event.target !== searchInput) {
+                userList.classList.add("d-none");
+            }
+        });
+
+        
+    });
+  document.getElementById("searchForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent the form from submitting
+    var searchTerm = document.getElementById("searchInput").value;
+    var element = document.getElementById(searchTerm);
+    if (element) {
+      element.scrollIntoView({behavior: "smooth"});
+    } else {
+      alert("ID not found!");
+    }
+  });
+</script>
+
+{% endblock content %}

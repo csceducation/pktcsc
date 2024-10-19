@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+
+{% block scriptORstyle %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock scriptORstyle %}
+
+
+{% block content %}
+
+<div class="container mt-5">
+    <h1>Select a Week and Date</h1>
+    <!-- Week and Date Selection Filter Bar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Week Selection Form -->
+        <form id="weekForm" method="get" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="week_input" class="mr-2">Choose a Week:</label>
+                <input type="week" id="week_input" name="week" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Week</button>
+        </form>
+
+        <!-- Date Selection Form -->
+        <form id="dateForm" method="get" class="form-inline">
+            <div class="form-group mr-3">
+                <label for="date_input" class="mr-2">Choose a Date:</label>
+                <select class="form-control" id="date_input" name="date" required>
+                    {% for date in week_dates %}
+                        <option value="{{ date }}">{{ date }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Date</button>
+        </form>
+    </div>
+</div>
+
+
+    <!-- Staff Chart Container -->
+    <div class="container mt-5">
+        <h2>Staff Attendance</h2>
+        <div id="staffChart" style="height:40%;width: 80%;"></div>
+    </div>
+
+    <!-- Student Chart Container -->
+    <div class="container mt-5">
+        <h2>Student Attendance</h2>
+        <div id="studentChart" style="height: 40%;width: 80%;"></div>
+    </div>
+    <!-- Students Attendances -->
+    <h2 class="mt-5">Students Attendances:</h2>
+    <table class="table table-bordered mt-3">
+        <thead class="thead-light">
+            <tr>
+                <th>Student Name</th>
+                <th>Entry Time</th>
+                <th>Exit Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students_data %}
+            <tr>
+                <td>{{ student.name }}</td>
+                <td>{% if student.entry_time %}{{ student.entry_time }}{% else %}Absent{% endif %}</td>
+                <td>{% if student.exit_time %}{{ student.exit_time }}{% else %}Absent{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Staffs Attendance -->
+    <h2 class="mt-5">Staffs Attendance:</h2>
+    <table class="table table-bordered mt-3">
+        <thead class="thead-light">
+            <tr>
+                <th>Staff Name</th>
+                <th>Entry Time</th>
+                <th>Exit Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staffs_data %}
+            <tr>
+                <td>{{ staff.name }}</td>
+                <td>{% if staff.entry_time %}{{ staff.entry_time }}{% else %}Absent{% endif %}</td>
+                <td>{% if staff.exit_time %}{{ staff.exit_time }}{% else %}Absent{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{{students_data}}
+{{staffs_data}}
+
+<!-- JavaScript to render the charts -->
+<script>
+    var staffGraphJSON = {{ staff_graphJSON|safe }};
+    var studentGraphJSON = {{ student_graphJSON|safe }};
+    console.log(staffGraphJSON)
+    console.log(studentGraphJSON)
+
+    // Render Staff Chart
+    Plotly.newPlot('staffChart', staffGraphJSON);
+
+    // Render Student Chart
+    Plotly.newPlot('studentChart', studentGraphJSON);
+</script>
+
+<script>
+    const weekForm = document.getElementById('weekForm');
+    const dateForm = document.getElementById('dateForm');
+    const weekInput = document.getElementById('week_input');
+    const dateInput = document.getElementById('date_input');
+
+    // Check if week parameter is present in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const weekParam = urlParams.get('week');
+
+    // If no week parameter, redirect to default week
+    if (!weekParam) {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const defaultWeek = `${year}-W${getISOWeek(today)}`;
+        window.location.href = window.location.href.includes('?')
+            ? `${window.location.href}&week=${defaultWeek}`
+            : `${window.location.href}?week=${defaultWeek}`;
+    }
+
+    weekForm.addEventListener('submit', function(event) {
+        const selectedWeek = weekInput.value;
+        if (!selectedWeek) {
+            // If no week is selected, redirect to default week parameter
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const defaultWeek = `${year}-W${getISOWeek(today)}`;
+            window.location.href = window.location.href.includes('?')
+                ? `${window.location.href}&week=${defaultWeek}`
+                : `${window.location.href}?week=${defaultWeek}`;
+            event.preventDefault();
+        } else {
+            // If week is selected, remove the date input value
+            dateInput.value = '';
+        }
+    });
+
+    dateForm.addEventListener('submit', function(event) {
+        const selectedDate = dateInput.value;
+        if (!selectedDate) {
+            // Handle empty date input, display error message or prevent form submission
+            event.preventDefault();
+            alert('Please select a date.');
+        } else {
+            // If date is selected, add both week and date parameters to the URL
+            const selectedWeek = weekInput.value;
+            dateForm.action = window.location.href.includes('?')
+                ? `${window.location.href}&week=${selectedWeek}&date=${selectedDate}`
+                : `${window.location.href}?week=${selectedWeek}&date=${selectedDate}`;
+        }
+    });
+
+    // Function to get ISO week number
+    function getISOWeek(date) {
+        const today = new Date(date);
+        const year = today.getFullYear();
+        const weekNumber = Math.floor((today - new Date(year, 0, 1)) / 604800000) + 1;
+        return weekNumber < 10 ? `0${weekNumber}` : weekNumber;
+    }
+</script>
+
+{% endblock content %}
+
+
+
+
+

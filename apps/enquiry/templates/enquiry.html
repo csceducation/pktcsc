@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Enquiry Details{% endblock title %}
+
+{% block breadcrumb %}
+<a class="btn btn-primary" href="{% url 'enquiry-create' %}"><i
+    class="fas fa-plus"></i> New Enquiry</a>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>Enquiry No</th>
+          <th>Fullname</th>
+          <th>Status</th>
+          <th>Mobile No</th>
+          <th>Intersted Course</th>
+          <th>Counseller</th>
+          <th>Remark</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for student in Enquiry %}
+          <tr class='clickable-row'  data-href="{% url 'enquiry-detail' student.auto_increment %}" 
+          {% if student.enquiry_status == "Admitted" %}
+          style="color: green;background-color: rgb(155, 178, 178);"
+          {% elif  student.enquiry_status == "Rejected" %}
+          style="color: red;"
+          {% else %}
+          style="color:yellow;background-color: rgb(206, 152, 152);"
+          
+          {% endif %}
+          >
+            <td>{{ student.enquiry_no}}</td>
+            <td>{{ student.name}}</td>
+            <td>{{ student.enquiry_status}}</td>
+            <td>{{ student.mobile_number}}</td>
+            <td>{% if student.course_to_join %}
+              {{student.course_to_join}}
+              {% else %}
+              {{student.new_course}}
+              {% endif %}
+            </td>
+            <td>{{ student.counsellor}}</td>
+            <td>{{ student.counsellor_remark}}</td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}
+
+
+{% block morejs %}
+<script>
+  $('#studenttable').DataTable({
+  });
+  
+</script>
+
+{% endblock morejs %}

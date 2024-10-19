@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+    <!-- template.html -->
+<style>
+    /* styles.css */
+/* Style the form container */
+.formss form {
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Style the form elements */
+.formss label, select, button {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.formss button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+</style>
+<div class = "formss">
+  <form method="get">
+    <label for="month">Select Month:</label>
+    <select id="month" name="month">
+      <option value="1">January</option>
+      <option value="2">February</option>
+      <option value="3">March</option>
+      <option value="4">April</option>
+      <option value="5">May</option>
+      <option value="6">June</option>
+      <option value="7">July</option>
+      <option value="8">August</option>
+      <option value="9">September</option>
+      <option value="10">October</option>
+      <option value="11">November</option>
+      <option value="12">December</option>
+      <!-- Add other month options as needed -->
+    </select>
+    <button type="submit">Submit</button>
+  </form>
+</div>
+    <div class="table-responsive">
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>Date</th>
+              <th>Bill No</th>
+              <th>Registration Number</th>
+              <th>Name</th>
+              <th>Current Class</th>
+              <th>Paid</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rec in recipt %}
+              <tr>
+                <td>{{ rec.date_paid}}</td>
+                <td>{{ rec.Bill_No}}</td>
+                <td>{{  rec.regno }}</td>
+                <td>{{ rec.name }}</td>
+                <td>{{rec.current_cls}}</td>
+                <td>{{ rec.amount_paid }}</td>
+                <td>{{rec.stats }}</td>
+
+              </tr>
+            {% endfor %}
+            <tr class="total">
+                <td>Month Income</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ today_col}}</td>
+                <td></td>
+               
+            </tr>
+          </tbody>
+        </table>
+      </div>
+</body>
+{% endblock %}

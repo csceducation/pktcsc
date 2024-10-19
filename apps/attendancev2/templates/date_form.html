@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+
+<div class="container mt-5">
+    <form id="dateForm" class="row g-3">
+        <div class="col-auto">
+            <label for="inputDate" class="visually-hidden">Select Date</label>
+            <input type="date" id="inputDate" class="form-control" required>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById("dateForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        const selectedDate = document.getElementById("inputDate").value;
+        const url = new URL(window.location.href);
+        url.searchParams.set("date", selectedDate);
+        
+        window.location.href = url.toString();
+    });
+</script>
+
+{% endblock content %}

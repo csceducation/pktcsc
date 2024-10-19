@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class = "my-4">
+    <form id="staff-select-form" class="form-inline">
+        <div class="form-group">
+            <label for="staff-select" class="mr-2">Select Staff:</label>
+            <select id="staff-select" name="staff" class="form-control mr-2">
+                <option value="">Select Staff</option>
+                {% for staff in staff_list %}
+                    <option value="{{ staff.id }}">{{ staff.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-info">Select</button>
+    </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Handle form submission
+            var form = document.getElementById("staff-select-form");
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+                var selectedStaffId = this.querySelector("#staff-select").value;
+                // Get the current URL
+                var url = new URL(window.location.origin + window.location.pathname);
+                // Add the staff_id parameter
+                url.searchParams.set("staff_id", selectedStaffId);
+                // Redirect to the new URL
+                window.location.href = url.toString();
+            });
+        });
+    </script>
+{% endblock content %}

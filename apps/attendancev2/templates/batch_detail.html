@@ -1,0 +1,48 @@
+<!-- lab_systems.html -->
+
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-3">
+    <div class="row">
+        <div class="col-10">
+            <h1>Lab Systems</h1>
+        </div>
+        <div class="col-2">
+            <a class="btn btn-info" href="{% url 'lab_list' %}">return to labs</a>
+        </div>
+    </div>
+    
+
+    <form id="addSystemForm" method="POST" action="{% url 'add_system' lab.id %}" class="mb-3">
+      {% csrf_token %}
+      <div class="input-group">
+        <input type="hidden" id="labId" value="{{ lab.id }}">
+        <input type="text" id="system_name" name="system_name" class="form-control" placeholder="Enter system name" style="max-width: 40%;" required>
+        <button type="submit" class="btn btn-primary">Add System</button>
+      </div>
+    </form>
+
+    <table id="systemsTable" class="table">
+      <thead>
+        <tr>
+          <th>System ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for system in lab.systems %}
+        <tr id="systemRow_{{ system.no }}">
+          <td>{{ system.no }}</td>
+          <td>
+            <a href="{% url 'delete_system' lab.id system.no %}" class="btn btn-danger">Delete</a>
+          </td>
+          <td>
+            <a href="{% url 'add_lab_attendance' lab.id  %}" class="btn btn-light">Manage Attendance</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

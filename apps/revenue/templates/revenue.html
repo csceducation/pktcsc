@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block content %}
+<body>
+    <div class="table-responsive">
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>Date</th>
+              <th>Bill No</th>
+              <th>Registration Number</th>
+              <th>Name</th>
+              <th>Current Class</th>
+              <th>Paid</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for rec in recipt %}
+              <tr>
+                <td>{{ rec.date_paid}}</td>
+                <td>{{ rec.Bill_No}}</td>
+                <td>{{  rec.regno }}</td>
+                <td>{{ rec.name }}</td>
+                <td>{{rec.current_cls}}</td>
+                <td>{{ rec.amount_paid }}</td>
+                <td>{{rec.stats }}</td>
+
+              </tr>
+            {% endfor %}
+            <tr class="total">
+                <td>Total Income</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>{{ today_col}}</td>
+                <td></td>
+               
+            </tr>
+    
+          </tbody>
+        </table>
+      </div>
+</body>
+{% endblock %}

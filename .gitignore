@@ -1,0 +1,49 @@
+# Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Virtual Environment
+venv/
+env/
+
+# IDE (e.g., VSCode)
+.vscode/
+
+# Editor-specific files
+*.sublime-project
+*.sublime-workspace
+
+# Local development settings
+*.env
+
+# Database
+
+*.sqlite3
+# Static files
+
+
+
+
+# Log files
+*.log
+
+# Compiled Python files
+*.pyc
+
+# Compiled translations
+*.mo
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

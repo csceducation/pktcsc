@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content-header %}
+<div class="card-header">
+  <div class="card-tools">
+    <a href="#" class="btn btn-tool">Print</a>
+    <a href="{% url 'enquiry-update' object.auto_increment %}" class="btn btn-tool">
+      <i class="fas fa-edit"></i>
+    </a>
+    {% if object.enquiry_status != "Admitted" %}
+    <a href="{% url 'enquiry-delete' object.auto_increment %}" class="btn btn-tool">
+      <i class="fas fa-trash"></i>
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endblock content-header %}
+
+{% block content %}
+    <div class="row mb-4">
+      <div class="col-sm-2">
+        <div class="row mb-2">
+
+          {% if object.passport %}
+            <img
+              src="{{ object.passport.url }}"
+              class="float-left rounded-circle mr-3" style="width: 120px; height: 120px;">
+          {% else %}
+            <img
+              src="{% static 'dist/img/avatar.png' %}"
+              class="float-left rounded-circle mr-3" style="width: 120px; height: 120px;">
+          {% endif %}
+          <h5 
+          {% if object.enquiry_status == "Admitted" %}
+          style="color: green;"
+          {% else %}
+          style="color: red;"
+          {% endif %}
+          >{{ object.enquiry_status }} </h5>
+          
+
+          <div class="float-right">
+            <h4>{{ object.name }} </h4>
+            <h4>{{ object.enquiry_no }} </h4>
+            <h5>Following Staff: <a href="{% url 'staff-detail' object.counsellor.id%}">{{object.counsellor.name}}</a></h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-8">
+        <div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Father Name
+            </label>
+            <div class="col">
+              {{ object.f_name}}
+            </div>
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Intersted Course to Join
+            </label>
+            <div class="col">
+              {{ object.course_to_join }}
+            </div>
+          </div>
+          
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Mobile Number
+            </label>
+            <div class="col">
+              {{ object.mobile_number}}
+            </div>
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Email
+            </label>
+            <div class="col">
+              {{ object.email}}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Student Occupation
+            </label>
+            <div class="col">
+              {{ object.student_role }}
+            </div>
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Comments
+            </label>
+            <div class="col">
+              {{ object.counsellor_remark }}
+            </div>
+
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Expected Date
+            </label>
+            <div class="col">
+              {{ object.expected_date }}
+            </div>
+
+        </div>
+
+      </div>
+    </div>
+<h4>Follwed History</h4> <a href="{% url  'logview' object.auto_increment %}"><input style="margin-left:10px;margin-bottom:10px;" type="submit" class="btn btn-primary" value="Add new History"></a>
+    {% if history %}
+      <table class="table table-sm table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>Date</th>
+            <th>Way of Contact</th>
+            <th>Contact By</th>
+            <th>Remark</th>
+            <th>Exp.Date Join</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for log in history %}
+            <tr>
+              <td>{{log.log_date}}</td>
+              <td>{{log.contact_by}}</td>
+              <td>{{log.staff_contact}}</td>
+              <td>{{log.comment}}</td>
+              <td>{{log.student.expected_date }}</td>
+              <td><a href="{% url 'enhis-delete' log.id %}"><input type="submit" class="btn btn-sm btn-primary" value="Delete"></a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>There are no  history for {{object}}</p>
+    {% endif %} 
+
+
+
+{% endblock content %}

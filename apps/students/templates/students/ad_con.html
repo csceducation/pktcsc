@@ -1,0 +1,56 @@
+<!-- select_enquiry.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+  Select Enquiry
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2>Select Enquiry</h2>
+  <form method="post" action="">
+    {% csrf_token %}
+    
+    <label for="enquiry">Select Enquiry:</label>
+    <input type="text" name="enquiry" id="enquiry" class="form-control" list="enquiry-list"  autocomplete="off"/>
+    <datalist id="enquiry-list">
+      {% for enquiry in enquiries %}
+        <option value="{{ enquiry.name }}({{enquiry.enquiry_no}}) {{ enquiry.auto_increment }} {{enquiry.mobile_number}}"></option>
+      {% endfor %}
+    </datalist>
+
+    <button type="submit" id="changeit" class="btn btn-primary mt-3">Next</button>
+  </form>
+</div>
+<script>
+  document.getElementById('changeit').addEventListener('click', function() {
+    var selectedOption = document.querySelector('#enquiry-list option[value="' + 
+document.getElementById('enquiry').value + '"]');
+
+    // Check if a valid option is selected
+    if (selectedOption) {
+      var inputText = 
+document.getElementById('enquiry').value;
+      var match = inputText.match(/\) (\d+)/);
+      
+      if (match) {
+      var lastNumbers = match[1];
+      
+document.getElementById('enquiry').value = lastNumbers;//lastNumbers;
+      } else {
+      console.log("No numbers found at the end of the text");
+      } 
+      // Allow the form submission if a valid option is selected
+      return true;
+    } else {
+      // Prevent the form submission if no valid option is selected
+      event.preventDefault();
+      alert('Please select a valid option from the list.');
+      return false;
+    }
+    // Run the code when the input value changes
+    
+  }
+  );
+</script>
+{% endblock content %}

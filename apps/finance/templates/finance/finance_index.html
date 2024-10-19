@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block scriptORstyle %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+{% endblock scriptORstyle %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card">
+    <div class="card-header bg-primary text-white">
+      <h2>Dashboard</h2>
+    </div>
+    <div class="card-body">
+      <form method="GET" class="form-inline mb-4">
+        <div class="form-group mb-2">
+          <label for="start_date" class="mr-2">Start Date</label>
+          <input type="date" name="start_date" class="form-control">
+        </div>
+        <div class="form-group mx-sm-3 mb-2">
+          <label for="end_date" class="mr-2">End Date</label>
+          <input type="date" name="end_date" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary mb-2">Submit</button>
+      </form>
+
+      {% if total_invoices %}
+      <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+          <!-- Card for Total Admissions -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Total Admissions</h4>
+              <p class="card-text">{{ total_invoices }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <!-- Card for Total Invoice Amount -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Total Invoice Amount (BV)</h4>
+              <p class="card-text">₹{{ total_invoice_amount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <!-- Card for Total Collected Amount -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Total Collected Amount (CR)</h4>
+              <p class="card-text">₹{{ total_collected_amount }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <!-- Card for CR Percent -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">CR Percent (CR %)</h4>
+              <p class="card-text">{{ cr_percent }}%</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <!-- Card for Average Amount per Admission -->
+          <div class="card">
+            <div class="card-body">
+              <h4 class="card-title">Average Amount per Admission (AVH)</h4>
+              <p class="card-text">₹{{ average_per_admission }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Course-wise Admissions, Enquiries Overview, and Batch Status</h3>
+      <div class="row">
+        <div class="col-md-4">
+          <div id="piechart" class="mb-4" style="height: 400px;"></div>
+        </div>
+        <div class="col-md-4">
+          {% if enquiry_data %}
+          <div id="enquiryPieChart" class="mb-4" style="height: 400px;"></div>
+          {% else %}
+          <p>No enquiry data available.</p>
+          {% endif %}
+        </div>
+        <div class="col-md-4">
+          <div id="batchPieChart" class="mb-4" style="height: 400px;"></div>
+        </div>
+      </div>
+
+      {% endif %}
+    </div>
+  </div>
+  
+  <div class="table-responsive my-2">
+    <h2>Student Admitted in {{ request.GET.start_date }} - {{ request.GET.end_date }}</h2>
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>S/N</th>
+          <th>Fullname</th>
+          <th>Registration Number</th>
+          <th>Current Class</th>
+          <th>Gender</th>
+          <th>Mobile Phone Number</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student in students %}
+        <tr class='clickable-row' data-href="{% url 'student-detail' student.id %}">
+          <td>{{ forloop.counter }}</td>
+          <td>{{ student.student_name }}</td>
+          <td>{{ student.enrol_no }}</td>
+          <td>{{ student.course }}</td>
+          <td>{{ student.gender }}</td>
+          <td>{{ student.mobile_number }}</td>
+          <td>{{ student.get_current_status_display }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  $('#studenttable').DataTable({});
+</script>
+
+<script type="text/javascript">
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(() => {
+    // Draw the Course-wise Admissions Pie Chart
+    const courseData = new google.visualization.DataTable();
+    courseData.addColumn('string', 'Course');
+    courseData.addColumn('number', 'Admissions');
+    courseData.addRows([
+      {% for course in course_admissions %}
+      ['{{ course.course__course_name }}', {{ course.admission_count }}],
+      {% endfor %}
+    ]);
+
+    const courseOptions = {
+      title: 'Course-wise Admissions',
+      pieHole: 0.4,
+      slices: { 0: { offset: 0.1 } },
+      legend: { position: 'bottom' }
+    };
+
+    const courseChart = new google.visualization.PieChart(document.getElementById('piechart'));
+    courseChart.draw(courseData, courseOptions);
+
+    // Draw the Enquiries Overview Pie Chart
+    if (true) {
+      const enquiryData = new google.visualization.DataTable();
+      enquiryData.addColumn('string', 'Status');
+      enquiryData.addColumn('number', 'Count');
+      enquiryData.addRows([
+        ['Admitted', {{ enquiry_data.admitted|default:0 }}],
+        ['Following', {{ enquiry_data.following|default:0 }}],
+        ['Dropped', {{ enquiry_data.dropped|default:0 }}]
+      ]);
+
+      const enquiryOptions = {
+        title: 'Enquiries by Status',
+        pieHole: 0.4,
+        slices: { 0: { offset: 0.1 } },
+        legend: { position: 'bottom' }
+      };
+
+      const enquiryChart = new google.visualization.PieChart(document.getElementById('enquiryPieChart'));
+      enquiryChart.draw(enquiryData, enquiryOptions);
+    }
+
+    // Draw the Batch Status Pie Chart
+    const batchData = new google.visualization.DataTable();
+    batchData.addColumn('string', 'Status');
+    batchData.addColumn('number', 'Count');
+    batchData.addRows([
+      ['Completed', {{ batch_data.completed }}],
+      ['Not Completed', {{ batch_data.not_completed }}]
+    ]);
+
+    const batchOptions = {
+      title: 'Batch Status',
+      pieHole: 0.4,
+      slices: { 0: { offset: 0.1 } },
+      legend: { position: 'bottom' }
+    };
+
+    const batchChart = new google.visualization.PieChart(document.getElementById('batchPieChart'));
+    batchChart.draw(batchData, batchOptions);
+  });
+</script>
+
+{% endblock content %}

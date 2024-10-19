@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Define the styles for the awesome heading */
+.awesome-heading {
+    font-family:Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    font-size: 24px;
+    font-weight: 500px;
+    color: #d215a6;
+    text-align: left;
+    text-transform: uppercase;
+    margin-top: 10px;
+    padding: 4px;
+    background-color: rgba(19, 18, 18, 0);
+}
+.total{
+    width: 100%;
+}
+
+</style>
+<body>
+  <form method="post" action="{% url 'bill_statement' %}">
+    {% csrf_token %}
+    <label for="start_date">Start Date: </label>
+    <input type="date" name="start_date" id="start_date" required><br>
+    <label for="end_date">End Date: </label>
+    <input type="date" name="end_date" id="end_date" required><br>
+    <button type="submit">Get Bill History</button>
+</form>
+{% if bills %}
+<h1 class="awesome-heading">Bill history : From {{startd}} to {{endd}} </h1>
+<div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>Date</th>
+          <th>Bill No</th>
+          <th>Registration Number</th>
+          <th>Name</th>
+          <th>Course</th>
+          <th>Amount</th>
+          <th>GST(18%)</th>
+          <th>Total Amount</th>
+
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rec in bills %}
+          <tr>
+            <td>{{ rec.date_paid}}</td>
+            <td>{{ rec.Bill_No}}</td>
+            <td>{{ rec.invoice.student.enrol_no }}</td>
+            <td>{{ rec.invoice.student.student_name }}</td>
+            <td>{{rec.invoice.student.course}}</td>
+            {% if rec.gst_amount == None and rec.org_amount == None %}
+            <td>GST Not added</td>
+            <td>GST Not added</td>
+            {% else %}
+            <td>{{rec.org_amount}}</td>
+            <td>{{rec.gst_amount}}</td>
+            
+            {% endif %}
+            <td>{{ rec.amount_paid }}</td>
+
+          </tr>
+        {% endfor %}
+        <tr class="total">
+            <td colspan="5">Total Income</td>
+            <td>{{total_amm}}</td>
+            <td>{{total_gst}}</td>
+            <td>{{ total_col }}</td>
+           
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p>No bills found for the selected date range.</p>
+{% endif %}
+</body>
+{% endblock %}

@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content-header %}
+<div class="card-header">
+  <div class="card-tools">
+    <a href="#" class="btn btn-tool">Print</a>
+    <a href="{% url 'staff-update' object.id %}" class="btn btn-tool">
+      <i class="fas fa-edit"></i>
+    </a>
+    <a href="{% url 'staff-delete' object.id %}" class="btn btn-tool">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+</div>
+{% endblock content-header %}
+
+{% block content %}
+<style>
+  .section {
+    padding: 20px 0;
+    position: relative;
+}
+.gray-bg {
+    background-color: #f5f5f5;
+}
+img {
+    max-width: 70%;
+}
+img {
+  border-radius : 20px;
+  height:400px;
+    vertical-align: middle;
+    border-style: none;
+}
+/* About Me 
+---------------------*/
+.about-text h3 {
+  font-size: 45px;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+@media (max-width: 767px) {
+  .about-text h3 {
+    font-size: 35px;
+  }
+}
+.about-text h6 {
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+@media (max-width: 767px) {
+  .about-text h6 {
+    font-size: 18px;
+  }
+}
+.about-text p {
+  font-size: 18px;
+  max-width: 450px;
+}
+.about-text p mark {
+  font-weight: 600;
+  color: #20247b;
+}
+
+.about-list {
+  padding-top: 10px;
+}
+.about-list .media {
+  padding: 5px 0;
+}
+.about-list label {
+  color: #20247b;
+  font-weight: 600;
+  width: 108px;
+  margin: 0;
+  position: relative;
+}
+.about-list label:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 11px;
+  width: 1px;
+  height: 12px;
+  background: #20247b;
+  -moz-transform: rotate(15deg);
+  -o-transform: rotate(15deg);
+  -ms-transform: rotate(15deg);
+  -webkit-transform: rotate(15deg);
+  transform: rotate(15deg);
+  margin: auto;
+  opacity: 0.5;
+}
+.about-list p {
+  margin: 0;
+  font-size: 15px;
+}
+
+@media (max-width: 991px) {
+  .about-avatar {
+    margin-top: 30px;
+  }
+}
+
+.about-section .counter {
+  padding: 22px 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(31, 45, 61, 0.125);
+}
+.about-section .counter .count-data {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+.about-section .counter .count {
+  font-weight: 700;
+  color: #20247b;
+  margin: 0 0 5px;
+}
+.about-section .counter p {
+  font-weight: 600;
+  margin: 0;
+}
+mark {
+    background-image: linear-gradient(rgba(252, 83, 86, 0.6), rgba(252, 83, 86, 0.6));
+    background-size: 100% 3px;
+    background-repeat: no-repeat;
+    background-position: 0 bottom;
+    background-color: transparent;
+    padding: 0;
+    color: currentColor;
+}
+.theme-color {
+    color: #fc5356;
+}
+.dark-color {
+    color: #20247b;
+}
+
+</style>
+<section class="section about-section gray-bg" id="about">
+  <div class="container">
+      <div class="row align-items-center flex-row-reverse">
+          <div class="col-lg-7">
+              <div class="about-text go-to">
+                  <h3 class="dark-color">{{object.name}}</h3>
+                  <h5> ID : {{object.id}}</h5>
+                  <h5>{{object.staff_timing}} Faculty</h5>
+                  <h6 class="theme-color lead">Staff Role : {{object.staff_role}}</h6>
+                  <h6 class="theme-color lead">Username : {{object.username}}</h6>
+                  <h6 class="theme-color lead">Password : {{object.password}}</h6>
+                  <p>{{object.software_pro}}</p>
+                  <div class="row about-list">
+                      <div class="col-md-6">
+                          <div class="media">
+                              <label>Birthday</label>
+                              <p>{{object.date_of_birth}}</p>
+                          </div>
+                          <div class="media">
+                              <label>Age</label>
+                              <p>{{object.age}}</p>
+                          </div>
+                          <div class="media">
+                              <label>Qualifications</label>
+                              <p>{{object.quali}}</p>
+                          </div>
+                          
+                      </div>
+                      <div class="col-md-6">
+                          <div class="media">
+                              <label>E-mail</label>
+                              <p>{{object.email}}</p>
+                          </div>
+                          <div class="media">
+                              <label>Phone</label>
+                              <p>{{object.mobile_number}}</p>
+                          </div>
+                          <div class="media">
+                              <label>From on</label>
+                              <p>{{object.date_of_admission}}</p>
+                          </div>
+                          
+                      </div>
+                      <div class="row">
+                        <div>
+                          <label>Address</label>
+                          <p>{{object.address}}</p>
+                          <p>{{object.address1}}</p>
+                          <p>{{object.taluka}}</p>
+                          <p>{{object.district}} {{object.pincode}}</p>
+                      </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="col-lg-5">
+              <div class="about-avatar">
+                {% if object.passport %}
+                <img
+                  src="{{ object.passport.url }}"
+                 >
+              {% else %}
+                <img
+                  src="{% static 'dist/img/avatar.png' %}"
+                 >
+              {% endif %}
+              </div>
+          </div>
+      </div>
+      <div class="card">
+        <div class="card-body mt-5">
+          
+          {% if object.aadhar_card %}
+            <a href="{{ object.aadhar_card.url }}" class="btn btn-primary" download>
+              Download Aadhar Card
+            </a>
+          {% endif %}
+          
+          {% if object.degree_certificate %}
+            <a href="{{ object.degree_certificate.url }}" class="btn btn-primary" download>
+              Download Degree Certificate
+            </a>
+          {% endif %}
+          
+          {% if object.resume %}
+            <a href="{{ object.resume.url }}" class="btn btn-primary" download>
+              Download Resume
+            </a>
+          {% endif %}
+          
+        </div>
+      </div>
+      <div class="table-responsive">
+        <h2><caption>Ongoing Batches</caption></h2>
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>S/N</th>
+              <th>Batch Id</th>
+              <th>Batch status</th>
+              <th>Batch started On</th>
+              <th>Batch course</th>
+              <th>Batch Staff</th>
+              <th>Batch Timing</th>
+              <th>Total Student</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+    
+            {% for batch in batches %}
+            {% if batch.batch_staff.id == object.id and batch.batch_status == 'Active' %}
+              <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
+                <td>{{ forloop.counter}}</td>
+                <td>{{ batch.batch_id}}</td>
+                <td>{{ batch.batch_status}}</td>
+                <td>{{ batch.batch_start_date}}</td>
+                <td>{{ batch.batch_course}}</td>
+                <td>{{ batch.batch_staff}}</td>
+                <td>{{ batch.batch_timing}}</td>
+                <td>{{ batch.total_student}}</td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+    
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-responsive">
+        <h2><caption>Completed Batches</caption></div></h2>
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>S/N</th>
+              <th>Batch Id</th>
+              <th>Batch status</th>
+              <th>Batch started On</th>
+              <th>Batch course</th>
+              <th>Batch Staff</th>
+              <th>Batch Timing</th>
+              <th>Total Student</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+    
+            {% for batch in batches %}
+            {% if batch.batch_staff.id == object.id and batch.batch_status == 'Inactive' %}
+              <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
+                <td>{{ forloop.counter}}</td>
+                <td>{{ batch.batch_id}}</td>
+                <td>{{ batch.batch_status}}</td>
+                <td>{{ batch.batch_start_date}}</td>
+                <td>{{ batch.batch_course}}</td>
+                <td>{{ batch.batch_staff}}</td>
+                <td>{{ batch.batch_timing}}</td>
+                <td>{{ batch.total_student}}</td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+    
+          </tbody>
+        </table>
+      </div>
+
+
+      
+
+      <div class="table-responsive">
+        <h2><caption>Attendance Data</caption></h2>
+        <form method="get">
+          <div class="form-group">
+              <label for="month">Select Month:</label>
+              <input type="month" id="month" name="month" class="form-control w-50" value="{{ form.initial.month }}-{{ form.initial.year }}">
+          </div>
+          <button type="submit" class="btn btn-primary">select month</button>
+        </form>
+          <table class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Staff ID</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date</th>
+                    <th scope="col">Entry Time</th>
+                    <th scope="col">Exit Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance %}
+                <tr>
+                    <td>{{ record.staff_id }}</td>
+                    <td>{{ record.name }}</td>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.entry_time }}</td>
+                    <td>{{ record.exit_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        </div>
+  </div>
+
+{% endblock content %}

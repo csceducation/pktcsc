@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content-header %}
+<div class="card-header">
+  <div class="card-tools">
+    <a href="{% url 'subjectcreate' object.id %}"><input type="button" class="btn btn-sm btn-primary" value="Add Subject"></a>
+    <a href="{% url 'bookcreate' object.id %}"><input type="button" class="btn btn-sm btn-primary" value="Add Book"></a>
+    <a href="{% url 'examcreate' object.id %}"><input type="button" class="btn btn-sm btn-primary" value="Add Exams"></a>
+    <a href="#" class="btn btn-tool">Print</a>
+    <a href="{% url 'course-update' object.id%}" class="btn btn-tool">
+      <i class="fas fa-edit"></i>
+    </a>
+    <a href="{% url 'course-delete' object.id%}" class="btn btn-tool">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+</div>
+{% endblock content-header %}
+
+{% block content %}
+    <div class="row mb-4">
+      <div class="col-sm-4">
+        <div class="row mb-2">
+
+
+
+          <div class="float-right">
+            <h4>{{ object.course_name }} </h4>
+            <h4>{{ object.status }} </h4>
+          </div>
+        </div>
+        <h5>
+      </div>
+      <div class="col-sm-8">
+        <div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Course Full Name
+            </label>
+            <div class="col">
+              {{ object.course_name }}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col">
+               Course Short Name
+            </label>
+            <div class="col">
+              {{ object.course_s_name}}
+            </div>
+          </div>
+
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Course Duration
+            </label>
+            <div class="col">
+                {{object.course_duration}}
+            </div>
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Course Fee
+            </label>
+            <div class="col">
+              {{ object.course_fee }}
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+    <h4>Subject</h4>
+    {% if subject %}
+      <table class="table table-sm table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>S/N</th>
+            <th>Subject Name</th>
+            <th>Subject Duration</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in subject %}
+       
+              
+              {% for subject_instance in sub.sub_name.all %}
+              <tr>
+              <td>{{forloop.counter}} </td>
+                  <td>{{ subject_instance.name }}</td>
+                  <td>{{ subject_instance.duration}}</td>
+              <td><a href="{% url 'course-subject-delete' sub.id subject_instance.name %}"><input type="button" class="btn btn-sm btn-primary" value="Delete"></a></td>
+            </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>No subjects Added for this course</p>
+    {% endif %}
+
+
+{% comment %} ---------------------------------------------------------------------------- {% endcomment %}
+
+<h4>Book</h4>
+{% if book %}
+  <table class="table table-sm table-bordered table-hover">
+    <thead class="thead-light">
+      <tr>
+        <th>S/N</th>
+        <th>Book Name</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bo in book %}
+      {% for book_instance in bo.book_name.all %}
+        <tr>
+          <td>{{forloop.counter}} </td>
+          <td>{{book_instance.name}}</td>
+          <td> <a href="{% url 'course-book-delete' bo.id book_instance.name %}"><input type="button" class="btn btn-sm btn-primary" value="Delete"></a></td>
+        </tr>
+      {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+    <p>There are no Books added For this course</p>
+{% endif %}
+    {% comment %} ---------------------------------------------------------------------------- {% endcomment %}
+    <h4>Exams</h4>
+    {% if exam %}
+      <table class="table table-sm table-bordered table-hover">
+        <thead class="thead-light">
+          <tr>
+            <th>S/N</th>
+            <th>Exam Name</th>
+            <th>Exam mode</th>
+            <th>Exam duration</th>
+            <th>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bo in exam %}
+          {% for book_instance in bo.course_exams.all %}
+            <tr>
+              <td>{{forloop.counter}} </td>
+              <td>{{book_instance.name}}</td>
+              <td>{{book_instance.exam_mode}}</td>
+              <td>{{book_instance.exam_duration}}</td>
+              <td> <a href="{% url 'course-exam-delete' bo.id book_instance.name %}"><input type="button" class="btn btn-sm btn-primary" value="Delete"></a></td>
+            </tr>
+          {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+        <p>There are no Books added For this course</p>
+    {% endif %}
+
+
+
+{% endblock content %}

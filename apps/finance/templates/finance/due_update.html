@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block content %}
+
+<h1>Update Due</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn-outline-primary">Save changes</button>
+</form>
+
+{% endblock content %}

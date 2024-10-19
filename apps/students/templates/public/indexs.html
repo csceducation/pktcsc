@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ object.student_name }}</title>
+    <link rel="shortcut icon" href="https://content.jdmagicbox.com/comp/krishnagiri/d9/9999p4343.4343.160817161634.c1d9/catalogue/csc-computer-education-krishnagiri-ho-krishnagiri-computer-training-institutes-mmcytnevnv-250.jpg">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+:root{
+    --color-primary: #7380ec;
+    --color-danger: #ff7782;
+    --color-success: #41f1b6;
+    --color-warning: #ffbb55;
+    --color-white: #fff;
+    --color-info: #7d8da1;
+    --color-dark: #363949;
+    --color-light: rgba(132, 139, 200, 0.18);
+    --color-dark-varient: #677483;
+    --color-background: #f6f6f9;
+    
+    --card-border-radius: 2rem;
+    --border-radius-1: 0.4rem;
+    --border-radius-2: 1.2rem;
+
+    --card-padding: 1.8rem;
+    --box-shadow: 0 2rem 3rem var(--color-light)    
+}
+
+.dark-theme{
+    --color-background: #181a1e;
+    --color-white: #202528;
+    --color-dark: #edeffd;
+    --color-dark-varient: #a3bdcc;
+    --color-light: rgba(0,0,0,0.4);
+    --box-shadow: 0 2rem 3rem var(--color-light)
+}
+
+
+*{
+    margin:0;
+    padding: 0;
+    text-decoration: none;
+    list-style: none;
+    box-sizing: border-box;
+}
+
+html{
+    font-size: 14px;
+    scroll-behavior: smooth;
+}
+body{
+    font-family: 'Poppins', sans-serif;
+    font-size: .88rem;
+    background: var(--color-background);
+    user-select: none;
+    overflow-x: hidden;
+    color: var(--color-dark);
+}
+*{
+    color: var(--color-dark);
+}
+img{
+    display: block;
+    width: 100%;
+}
+h1{
+    font-weight: 800;
+    font-size: 1.8rem;
+}
+h2{font-size: 1.4rem;}
+h3{font-size: .87rem;}
+h4{font-size: .8rem;}
+h5{font-size: .77rem;}
+small{font-size: .75rem;}
+
+.text-muted{color: var(--color-info);}
+p{color: var(--color-dark-varient);}
+b{color: var(--color-dark);}
+
+.primary{color: var(--color-primary);}
+.danger{color: var(--color-danger);}
+.success{color: var(--color-success)}
+.warning{color: var(--color-warning);}
+
+.container{
+    position: relative;
+    display: grid;
+    width: 93%;
+    margin: 0 3rem;
+    gap: 1.8rem;
+    grid-template-columns: 14rem auto 23rem;
+    padding-top: 4rem;
+}
+header h3{font-weight: 500;} 
+header{
+    position: fixed;
+    width: 100vw;
+    z-index: 1000;
+    background-color: var(--color-background);
+    text-align: center;
+}
+header.active{box-shadow: var(--box-shadow);}
+header .logo{
+    display: flex;
+    gap: .8rem;
+    margin-right: auto;
+}
+header .logo img{
+    width: 2rem;
+    height: 2rem;
+}
+
+header,
+header .navbar{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 3rem;
+    color: var(--color-info);
+}
+header .navbar a{
+    display: flex;
+    margin-left: 2rem;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    height: 3.7rem;
+    transition: all 300ms ease;
+    padding: 0 2rem;
+}
+header .navbar a:hover {
+    padding-top: 1.5rem;
+}
+header .navbar a.active{
+    background: var(--color-light);
+    color: var(--color-primary);
+}
+header .navbar a.active::before{
+    content: "";
+    background-color: var(--color-primary);
+    position: absolute;
+    height: 5px;
+    width: 100%;
+    left: 0;top: 0;
+}
+header #profile-btn{
+    display: none;
+    font-size: 2rem;
+    margin: .5rem 2rem 0 0;
+    cursor: pointer;
+}
+header .theme-toggler{
+    background: var(--color-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 1.6rem;
+    width: 4.2rem;
+    cursor: pointer;
+    border-radius: var(--border-radius-1);
+    margin-right: 2rem;
+}
+header .theme-toggler span{
+    font-size: 1.2rem;
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+header .theme-toggler span.active{
+    background-color: var(--color-primary);
+    color: white;
+    border-radius: var(--border-radius-1);
+}
+
+/* Profile section  */
+aside .profile{
+    margin-top: 2rem;
+    width: 13rem;
+    position: fixed;
+}
+aside .profile .top{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid var(--color-light);
+    padding-bottom: 1rem;
+}
+aside .profile .top:hover .profile-photo{
+    scale: 1.05;
+}
+aside .profile .top .profile-photo{
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 5px solid var(--color-light);
+    transition: all 400ms ease;
+}
+aside .profile .about p{
+    padding-bottom: 1rem;
+}
+aside .profile .about{
+    margin-top: 1rem;
+}
+
+/* Home Section  */
+main{
+    position: relative;
+    margin-top: 1.4rem;
+}
+main .subjects{
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1.6rem;
+}
+
+main .subjects > div{
+    background-color: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    margin-top: 1rem;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+main .subjects > div:hover{
+    box-shadow: none;
+}
+main .subjects > div span{
+    background-color: var(--color-primary);
+    padding: .5rem;
+    border-radius: 50%;
+    color: var(--color-white);
+    font-size: 1.5rem;
+}
+main .subjects > div.mth span,main .subjects > div.cg span{background: var(--color-danger);}
+main .subjects > div.cs span{background: var(--color-success);}
+
+main .subjects h3{
+    margin: 1rem 0 0.6rem;
+    font-size: 1rem;
+}
+main .subjects .progress{
+    position: relative;
+    width: 89px;
+    height: 89px;
+    border-radius: 50%;
+    margin: auto;
+}
+main .subjects svg circle{
+    fill: none;
+    stroke: var(--color-primary);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transform: translate(5px, 5px);
+    stroke-dasharray: 110;
+    stroke-dashoffset: 92;
+}
+main .subjects .eg svg circle{
+    stroke-dashoffset: 25;
+    stroke-dasharray: 210;
+}
+main .subjects .mth svg circle{
+    stroke-dashoffset: 7;
+    stroke-dasharray: 210;
+}
+main .subjects .cs svg circle{
+    stroke-dashoffset: 35;
+    stroke-dasharray: 210;
+}
+main .subjects .cg svg circle{
+    stroke-dashoffset: 0;
+    stroke-dasharray: 210;
+}
+main .subjects .net svg circle{
+    stroke-dashoffset: 5;
+    stroke-dasharray: 210;
+}
+main .subjects .progress .number{
+    position: absolute;
+    top: 0;left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+main .subjects small{
+    margin-top: 1rem;
+    display: block;
+}
+main .timetable{
+    margin-top: 2rem;
+}
+main .timetable h2{
+    margin-bottom: .8rem;
+}
+main .timetable table{
+    background-color: var(--color-white);
+    width: 98%;
+    border-radius: var(--card-border-radius);
+    padding: var(--card-padding);
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+main .timetable span{display: none;}
+main .timetable table:hover{box-shadow: none;}
+main table tbody td{
+    height: 2.8rem;
+    border-bottom: 1px solid var(--color-light);
+    color:rgb(168, 237, 99);
+}
+main table tbody tr:last-child td{border: none;}
+
+main .timetable.active{
+    width: 100%;
+    height: 100vh;
+    position: fixed;
+    top: 0;left: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+main .timetable.active h2{
+    color: var(--color-dark);
+}
+main .timetable.active table{
+    width: 90%;
+    max-width: 1000px;
+    position: relative;
+}
+main .timetable.active span{
+    display: block;
+    font-size: 2rem;
+    color: var(--color-dark);
+    cursor: pointer;
+}
+.timetable div{
+    position: relative;
+    width: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+main .timetable.active .closeBtn{
+    position: absolute;
+    top: 5%;right: 5%;
+}
+p{
+  color:white !important;
+}
+
+/* Right  */
+.right{margin-top: 2.2rem;padding-left: 1.5rem;}
+
+.right .announcements h2{margin-bottom: .8rem;}
+.right .announcements .updates{
+    background-color: var(--color-white);
+    padding: var(--card-padding);
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--box-shadow);
+    transition: all 300ms ease;
+}
+.right .announcements .updates:hover{box-shadow: none;}
+.right .announcements .updates .message{
+    gap: 1rem;
+    line-height: 1.5;
+    padding: .5rem 0;
+}
+
+/* Teachers on leave  */
+.right .leaves{margin-top: 2rem;}
+.right .leaves h2{margin-bottom: .8rem;}
+.right .leaves .teacher{
+    background: var(--color-white);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: .7rem;
+    padding: 1.4rem var(--card-padding);
+    border-radius: var(--border-radius-2);
+    transition: all 300ms ease;
+    box-shadow: var(--box-shadow);
+}
+.right .profile-photo{
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+.right .leaves .teacher:hover{box-shadow: none;}
+
+
+
+
+
+/* MEDIA QUERIES  */
+@media screen and (max-width: 1200px) {
+    html{font-size: 12px;}
+    .container{
+        grid-template-columns: 13rem auto 20rem;
+    }
+    header{position: fixed;}
+    .container{padding-top: 4rem;}
+    header .logo h2{display: none;}
+    header .navbar h3{display: none;}
+    header .navbar a{width: 4.5rem; padding: 0 1rem;}
+
+    main .subjects{
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1;
+    }
+    main .timetable{
+        width: 150%;
+        position: relative;
+        padding: 4rem 0 0 0;
+    }
+}
+
+
+@media screen and (max-width: 768px){
+    html{font-size: 10px;}
+    header{padding: 0 .8rem;}
+    .container{width: 100%; grid-template-columns: 1fr;margin: 0;}
+    header #profile-btn{display: inline;}
+    header .navbar{padding: 0;}
+    header .navbar a{margin: 0 .5rem 0 0;}
+    header .theme-toggler{margin: 0;}
+    aside{
+        position: absolute;
+        top: 4rem;left: 0;right: 0;
+        background-color: var(--color-white);
+        padding-left: 2rem;
+        transform: translateX(-100%);
+        z-index: 10;
+        width:18rem;
+        height: 100vh;
+        box-shadow: 1rem 3rem 4rem var(--color-light);
+        transition: all 2s ease;
+    }
+    aside.active{
+        transform: translateX(0);
+    }
+    main{padding: 0 2rem;}
+    main .timetable{
+        position: relative;
+        margin: 3rem 0 0 0;
+        width: 100%;
+    }
+    main .timetable table{
+        width: 100%;
+        margin: 0;
+    }
+    .right{
+        width: 100%;
+        padding: 2rem;
+    }
+}
+
+    </style>
+</head>
+<body class="dark-theme">
+    <header>
+        <div class="logo" title="Computer Software College">
+            <img src="https://content.jdmagicbox.com/comp/krishnagiri/d9/9999p4343.4343.160817161634.c1d9/catalogue/csc-computer-education-krishnagiri-ho-krishnagiri-computer-training-institutes-mmcytnevnv-250.jpg" alt="">
+            <h2 style="display:block">C<span class="danger">S</span>C Pudukkottai  </h2>
+        </div>
+        <div class="navbar">
+            <a href="{% url 'public_student_profile_attendance' pk=object.id %}">
+                <span class="material-icons-sharp">note</span>
+                <h3>Attendance</h3>
+            </a>
+            <div id="profile-btn" style="display: block;">
+                <span class="material-icons-sharp">person</span>
+            </div>
+      </div>
+        
+    </header>
+    <div class="container">
+        <aside>
+            <div class="profile">
+                <div class="top">
+                    <div class="profile-photo">
+                        <img src="{{ object.passport.url }}" alt="">
+                    </div>
+                    <div class="info">
+                        <p>Hey, <b>{{ object.student_name }}</b> </p>
+                        <small class="text-muted">{{ object.enrol_no }}</small>
+                    </div>
+                </div>
+                <div class="about">
+                    <h5>Course</h5>
+                    <p>{{ object.course }}</p>
+                    <h5>Date of Join</h5>
+                    <p>{{object.date_of_admission}}</p>
+                    <h5>DOB</h5>
+                    <p>{{object.date_of_birth}}</p>
+                    <h5>Contact</h5>
+                    <p>{{object.mobile_number}}</p>
+                    <h5>Email</h5>
+                    <p>{{object.email}}</p>
+                    <h5>Address</h5>
+                    <p>{{object.address}} ,{{object.district}}, {{object.pincode}}</p>
+                    
+                </div>
+            </div>
+        </aside>
+
+        <main><!-- 
+            <h1>Attendance</h1>
+            <div class="subjects">
+                <div class="eg">
+                    <span class="material-icons-sharp">architecture</span>
+                    <h3>Engineering Graphics</h3>
+                    <h2>12/14</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>86%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="mth">
+                    <span class="material-icons-sharp">functions</span>
+                    <h3>Mathematical Engineering</h3>
+                    <h2>27/29</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>93%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="cs">
+                    <span class="material-icons-sharp">computer</span>
+                    <h3>Computer Architecture</h3>
+                    <h2>27/30</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>81%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="cg">
+                    <span class="material-icons-sharp">dns</span>
+                    <h3>Database Management</h3>
+                    <h2>24/25</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>96%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+                <div class="net">
+                    <span class="material-icons-sharp">router</span>
+                    <h3>Network Security</h3>
+                    <h2>25/27</h2>
+                    <div class="progress">
+                        <svg><circle cx="38" cy="38" r="36"></circle></svg>
+                        <div class="number"><p>92%</p></div>
+                    </div>
+                    <small class="text-muted">Last 24 Hours</small>
+                </div>
+            </div>
+ -->    
+{% if booklog %}
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Book Issued Details <span style="display:block; font-size:1rem;">{% for book in booklog %}
+                      {% if forloop.last %}
+                          <p>Last update: {{ book.last_updated }}</p>
+                        {% endif %}
+                          <!-- Access other fields of the last payment as needed -->{% endfor %}</span>
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Received Book</th>
+                            <th>Handled By</th>
+                            <th>remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in booklog %}
+                 
+                      <tr>
+                          <td>{{ book.received_date }}</td>
+                          <td>{{ book.received_book }}</td>
+                          <td>{{ book.handled_by }}</td>
+                          <td>{{ book.remark }}</td>
+                      </tr>
+                  {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+<!-------------------------------------------------------------------------------------------->
+
+        {% if classlog  %}     
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Class Details <span style="display:block;font-size:1rem;">{% for book in classlog %}
+
+                      {% if forloop.last %}
+                  
+                          <p>Last update: {{ book.last_updated }}</p>
+                  
+                        {% endif %}
+                  
+                          <!-- Access other fields of the last payment as needed -->{% endfor %}</span>
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>started on</th>
+                            <th>End on</th>
+                            <th>Class Timing</th>
+                            <th>Subject Teacher</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>{% for class in classlog %}
+ 
+              
+ 
+                        <tr>
+        
+                          <td>{{class.finised_subject}} </td>
+        
+                          <td>{{class.start_date}}</td>
+        
+                          <td>{{class.end_date}}</td>
+        
+                          <td>{{class.class_time.time}}</td>
+        
+                          <td>{{class.faculty}}<td>
+        
+                            {{class.remark}}
+        
+                           </tr>
+        
+                      {% endfor %}
+        </tbody>
+                </table>
+            </div>
+   
+        {% endif %}
+<!----------------------------------->
+
+{% if examlog %}
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Exam Details <span style="display:block;font-size:1rem;">{% for book in examlog %}
+
+                      {% if forloop.last %}
+                  
+                          <p>Last update: {{ book.last_updated }}</p>
+                  
+                        {% endif %}
+                  
+                          <!-- Access other fields of the last payment as needed -->{% endfor %}</span>
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Contected on</th>
+                            <th>Contected Mode</th>
+                            <th>Theory mark</th>
+                            <th>Paratical mark</th>
+                            <th>Total mark</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exams in examlog %}
+                        <tr>
+                          <td>{{exams.subject}}</td>
+                          <td>{{exams.exam_date}}</td>
+                          <td>{{exams.contected_mode}}</td>
+                          <td>{{exams.theory_mark}}</td>
+                          <td>{{exams.paratical_mark}}</td>
+                          <td>{{exams.mark}}</td>
+                          <td>{{exams.remark}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+            </div>
+            {% endif %}
+<!------------------------------------------->
+
+
+{% if certilog %}
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Certificate Details <span style="display:block;font-size:1rem;">{% for cert in certilog %}
+
+                      {% if forloop.last %}
+                      
+                          <p>Last update: {{ cert.last_updated }}</p>
+                      
+                        {% endif %}
+                      
+                          <!-- Access other fields of the last payment as needed -->{% endfor %}</span>
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+
+                            <th>Course</th>
+                 
+                            <th>Date of Completion</th>
+                 
+                            <th>Certificate Number</th>
+                 
+                            <th>Certificate Date</th>
+                 
+                            <th>Certificate Issued Date</th>
+                 
+                            <th>
+                 
+                              Grade on Certificate</th>
+                 
+                              <th>Certificate Issued By</th>
+                 
+                              <th>Remark</th>
+                 
+                          </tr>
+                 
+                    </thead>
+                    <tbody>
+                        {% for log in certilog %}
+
+
+                        <tr>
+             
+                          <td>{{log.course}} </td>
+             
+                          <td>{{log.date_of_complete}}</td>
+             
+                          <td>{{log.certificate_no}}</td>
+             
+                          <td>{{log.certificate_date}}</td>
+             
+                          <td>{{log.certificate_issued_date}}</td>
+             
+                          <td>{{log.grade}}<td>
+             
+                            {{log.issued_by}}
+             
+                            <td>{{log.remark}}</td>
+             
+                        </tr>
+             
+                      {% endfor %}
+             
+                    </tbody>
+                </table>
+            </div>
+
+{% endif %}
+<!----------------------------------->
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Payment Details
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+      
+                            <th>Amount Payable</th>
+          
+                            <th>Amount Paid</th>
+          
+                            <th>balance</th>
+          
+                          </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+      
+                    {{payment.last_updated}}
+      
+                      <tr>
+      
+                        <td>{{payment.total_amount_payable}}</td>
+      
+                        <td>{{payment.total_amount_paid}}</td>
+      
+                        <td>{{payment.balance}}</td>
+      
+                      </tr>
+      
+                    {% endfor %}
+      
+                    </tbody>
+                </table>
+            </div>
+            <div class="timetable" id="timetable">
+                <div>
+                    <span id="prevDay">&lt;</span>
+                    <h2>Due Payments 
+                    </h2>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+      
+                            <th>Amount Payable</th>
+          
+                            <th>Last Date</th>
+          
+                          </tr>
+                    </thead>
+                    <tbody>
+                        {% for due in dues %}
+      
+                      <tr>
+      
+                        <td>{{due.amount}}</td>
+      
+                        <td>{{due.due_date}}</td>
+      
+                      </tr>
+      
+                    {% endfor %}
+      
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- <div class="right">
+            <div class="announcements">
+                <h2>Announcements</h2>
+                <div class="updates">
+                    <div class="message">
+                        <p> <b>Academic</b> Summer training internship with Live Projects.</p>
+                        <small class="text-muted">2 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p> <b>Co-curricular</b> Global internship oportunity by Student organization.</p>
+                        <small class="text-muted">10 Minutes Ago</small>
+                    </div>
+                    <div class="message">
+                        <p> <b>Examination</b> Instructions for Mid Term Examination.</p>
+                        <small class="text-muted">Yesterday</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="leaves">
+                <h2>Teachers on leave</h2>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="./images/profile-2.jpeg" alt=""></div>
+                    <div class="info">
+                        <h3>The Professor</h3>
+                        <small class="text-muted">Full Day</small>
+                    </div>
+                </div>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="./images/profile-3.jpg" alt=""></div>
+                    <div class="info">
+                        <h3>Lisa Manobal</h3>
+                        <small class="text-muted">Half Day</small>
+                    </div>
+                </div>
+                <div class="teacher">
+                    <div class="profile-photo"><img src="./images/profile-4.jpg" alt=""></div>
+                    <div class="info">
+                        <h3>Himanshu Jindal</h3>
+                        <small class="text-muted">Full Day</small>
+                    </div>
+                </div>
+            </div>
+ -->
+        </div>
+    </div>
+    <script>
+        const sideMenu = document.querySelector("aside");
+const profileBtn = document.querySelector("#profile-btn");
+const themeToggler = document.querySelector(".theme-toggler");
+const nextDay = document.getElementById('nextDay');
+const prevDay = document.getElementById('prevDay');
+
+profileBtn.onclick = function() {
+    sideMenu.classList.toggle('active');
+}
+window.onscroll = () => {
+    sideMenu.classList.remove('active');
+    if(window.scrollY > 0){document.querySelector('header').classList.add('active');}
+    else{document.querySelector('header').classList.remove('active');}
+}
+
+themeToggler.onclick = function() {
+    document.body.classList.toggle('dark-theme');
+    themeToggler.querySelector('span:nth-child(1)').classList.toggle('active')
+    themeToggler.querySelector('span:nth-child(2)').classList.toggle('active')
+}
+
+let setData = (day) =>{
+    document.querySelector('table tbody').innerHTML = ' '; //To clear out previous table data;  
+    let daylist = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    document.querySelector('.timetable div h2').innerHTML = daylist[day];
+    switch(day){
+        case(0): day = Sunday; break;
+        case(1): day = Monday; break;
+        case(2): day = Tuesday; break;
+        case(3): day = Wednesday; break;
+        case(4): day = Thursday; break;
+        case(5): day = Friday; break;
+        case(6): day = Saturday; break;
+    }
+
+    day.forEach(sub => {
+        const tr = document.createElement('tr');
+        const trContent = `
+                            <td>${sub.time}</td>
+                            <td>${sub.roomNumber}</td>
+                            <td>${sub.subject}</td>
+                            <td>${sub.type}</td>
+                        `
+        tr.innerHTML = trContent;
+        document.querySelector('table tbody').appendChild(tr)                        
+    });
+}
+
+let now = new Date();
+let today = now.getDay(); // Will return the present day in numerical value; 
+let day = today; //To prevent the today value from changing;
+
+function timeTableAll(){
+    document.getElementById('timetable').classList.toggle('active');
+    setData(today);
+    document.querySelector('.timetable div h2').innerHTML = "Today's Timetable";
+}
+nextDay.onclick = function() {
+    day<=5 ? day++ : day=0;  // If else one liner
+    setData(day);
+}
+prevDay.onclick = function() {
+    day>=1 ? day-- : day=6;    
+    setData(day);
+}
+
+setData(day); //To set the data in the table on loading window.
+document.querySelector('.timetable div h2').innerHTML = "Today's Timetable"; //To prevent overwriting the heading on loading;
+
+    </script>
+</body>
+</html>

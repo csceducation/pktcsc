@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  {% if object %}
+    Update {{ object }}
+  {% else %}
+    Add new Enquiry
+  {% endif %}
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <form method="post" action="" class="needs-validation">
+      {% csrf_token %}
+      {% if form.errors %}
+      <div class="alert alert-danger">
+        <strong>Error:</strong> There are issues with your submission.{{form.errors}}
+      </div>
+      {% endif %}
+      
+      <!-- Personal Info Page -->
+      <div id="personal-info">
+        <h2 class="mb-4">Personal Info</h2>
+        {% for field in form.fieldsets_as_dict.personal_info %}
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label" for="{{ field.auto_id }}">
+              {{ field.label }}
+              {% for error in field.errors %}
+                <small id="{{ field.auto_id }}" class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </label>
+            <div class="col-sm-9">
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text|safe }}</small>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Qualification Info Page -->
+      <div id="qualification-use">
+        <h2 class="mb-4">Qualification Status</h2>
+        {% for field in form.fieldsets_as_dict.qualification_use %}
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label" for="{{ field.auto_id }}">
+              {{ field.label }}
+              {% for error in field.errors %}
+                <small id="{{ field.auto_id }}" class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </label>
+            <div class="col-sm-9">
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text|safe }}</small>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Office Use Page -->
+
+
+      <!-- Others Page -->
+      <div id="others">
+        <h2 class="mb-4">Others</h2>
+        {% for field in form.fieldsets_as_dict.others %}
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label" for="{{ field.auto_id }}">
+              {{ field.label }}
+              {% for error in field.errors %}
+                <small id="{{ field.auto_id }}" class="text-danger">{{ error }}</small>
+              {% endfor %}
+            </label>
+            <div class="col-sm-9">
+              {{ field }}
+              {% if field.help_text %}
+                <small>{{ field.help_text|safe }}</small>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+        {% if object %}
+          <button type="submit" class="btn btn-primary">Edit Record</button>
+        {% else %}
+          <button type="submit" class="btn btn-primary">Add new Enquiry</button>
+        {% endif %}
+      </div>
+    </form>
+    <br>
+    <a href="{% url 'student-enquiry-create' pk %}"><input type="button" class="btn btn-sm btn-primary" value="Admit Record"></a>
+          <a href="{% url 'student-enquiry-delete' pk %}"><input type="button" class="btn btn-sm btn-primary" value="Delete Record"></a>
+  </div>
+{% endblock content %}

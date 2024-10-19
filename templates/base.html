@@ -1,0 +1,443 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  <style>
+            /* Footer container */
+            .footer {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+        /* Footer text */
+        .footer p {
+            margin: 0;
+            text-align: center;
+        }
+  </style>
+  {% block scriptORstyle %}{% endblock scriptORstyle %}
+  <title>Pudukkottai   CSC</title>
+  <link rel="icon" href="https://content.jdmagicbox.com/comp/krishnagiri/d9/9999p4343.4343.160817161634.c1d9/catalogue/csc-computer-education-krishnagiri-ho-krishnagiri-computer-training-institutes-mmcytnevnv-250.jpg">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="{% static 'plugins/fontawesome-free/css/all.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/toastr/toastr.min.css' %}">
+  <!-- overlayScrollbars -->
+  <link rel="stylesheet"
+    href="{% static 'plugins/overlayScrollbars/css/OverlayScrollbars.min.css' %}">
+  <link rel="stylesheet" href="{% static 'plugins/Datatables/datatables.min.css' %}" />
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'dist/css/adminlte.min.css' %}">
+  <!-- Google Font: Source Sans Pro -->
+  <link
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700"
+    rel="stylesheet">
+</head>
+
+<body
+  class="hold-transition sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
+  <div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+      <!-- Left navbar links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i
+              class="fas fa-bars"></i></a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a href="{% url 'home' %} " class="nav-link"><i class="fa fa-home"></i></a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a  class="nav-link">Branch: {{ current_session }}</a>
+        </li>
+        <li class="nav-item d-none d-sm-inline-block">
+          <a  class="nav-link">Year: {{ current_term }}</a>
+        </li>
+        {% if request.user.is_superuser %}
+          <li class="nav-item d-none d-sm-inline-block">
+            <a  class="nav-link"><p class = "font-weight-bold">Role : Admin</p></a>
+          </li>
+        {% elif request.user.is_staff %}
+          <li class="nav-item d-none d-sm-inline-block">
+            <a  class="nav-link"><p class = "font-weight-bold">Role : Staff</p></a>
+          </li> 
+        {% else %}
+          <li class="nav-item d-none d-sm-inline-block">
+            <a  class="nav-link"><p class = "font-weight-bold">Role : Student</p></a>
+          </li>      
+        {% endif %}
+      </ul>
+
+
+
+      <!-- Right navbar links -->
+      <ul class="navbar-nav ml-auto">
+        <!-- Notifications Dropdown Menu -->
+        <li class="nav-item dropdown">
+            <a class="nav-link" data-toggle="dropdown" href="#">
+                <i class="far fa-user"></i>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                {% if request.user.is_superuser %}
+                    <!--<a href="/" class="dropdown-item">
+                        <i class="fas fa-user mr-2"></i> Profile
+                    </a>
+                  -->
+                {% elif request.user.is_staff %}
+                    <a href="{% url 'staff-detail' pk=request.user.staff_profile.id %}" class="dropdown-item">
+                        <i class="fas fa-user mr-2"></i> Profile
+                    </a>
+                {% else %}
+                    <a href="{% url 'public_student_profile' pk=request.user.student_profile.id %}" class="dropdown-item">
+                        <i class="fas fa-user mr-2"></i> Profile
+                    </a>
+                {% endif %}
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'logout' %}" class="dropdown-item">
+                    <i class="fas fa-sign-out"></i> Sign out
+                </a>
+            </div>
+        </li>
+    </ul>
+  </nav>
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+      <!-- Brand Logo -->
+      <a href="{% url 'home' %}" class="brand-link"> Pudukkottai   CSC </a>
+      {% if request.user.is_superuser %}
+        <!-- Sidebar -->
+        <div class="sidebar">
+        
+          <!-- Sidebar Menu -->
+          <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column"
+              data-widget="treeview" role="menu" data-accordion="false">
+              {% if request.user.is_superuser or request.user.is_staff %}
+              <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link">
+                  <i class="nav-icon fas fa-graduation-cap"></i>
+                  <p>
+                    Students
+                  </p>
+                </a>
+              </li>
+              {% endif %}
+              {% if request.user.is_superuser %}
+              <li class="nav-item">
+                <a href="{% url 'staff-list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                  Staff
+                  </p>
+                </a>
+              </li>
+              {% endif %}
+              <li class="nav-item">
+                <a href="{% url 'list_course' %}" class="nav-link">
+                  <i class="nav-icon fas fa-book"></i>
+                  <p>
+                  Course
+                  </p>
+                </a>
+              </li>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'batch_list' %}" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                  Batch
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'router' %}" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                  Attendance
+                  </p>
+                </a>
+              </li>
+              
+              
+
+
+              <li class="nav-header">Finance</li>
+              <li class="nav-item">
+                <a href="{% url 'bill' %}" class="nav-link">
+                  <i class="nav-icon fas fa-money-bill-alt"></i>
+                  <p>
+                    Bill Entry
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'due_dashboard' %}" class="nav-link">
+                  <i class="nav-icon fas fa-calendar-check"></i>
+                  <p>
+                    Due Bills
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'today' %}" class="nav-link">
+                  <i class="nav-icon fas fa-money-bill-alt"></i>
+                  <p>
+                    Bill statements
+                  </p>
+                </a>
+              </li>
+              
+              <li class="nav-header">Others</li>
+              <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                  <i class="nav-icon fas fa-copy"></i>
+                  <p>
+                    Management
+                    <i class="fas fa-angle-left right"></i>
+                  </p>
+                </a>
+                <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="{% url 'subjects' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Subjects
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'book' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Book
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'exam' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Exam
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'time' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Time
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'bill-detail' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Bill - utility
+                      </p>
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'configs' %}" class="nav-link">
+                  <i class="nav-icon fas fa-cog"></i>
+                  <p>
+                    Settings
+                  </p>
+                </a>
+              </li>
+
+
+            </ul>
+          </nav>
+          <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+      {% elif request.user.is_staff and not request.user.is_superuser %}
+          <!-- Sidebar -->
+      <div class="sidebar">
+      
+        <!-- Sidebar Menu -->
+        <nav class="mt-2">
+          <ul class="nav nav-pills nav-sidebar flex-column"
+            data-widget="treeview" role="menu" data-accordion="false">
+            {% if request.user.is_superuser or request.user.is_staff %}
+            <li class="nav-item">
+              <a href="{% url 'dashboard' %}" class="nav-link">
+                <i class="nav-icon fas fa-graduation-cap"></i>
+                <p>
+                  Students
+                </p>
+              </a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a href="{% url 'batch_list' %}" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>
+                Batch
+                </p>
+              </a>
+            </li>
+            
+
+            <li class="nav-header">Finance</li>
+            <li class="nav-item">
+              <a href="{% url 'bill' %}" class="nav-link">
+                <i class="nav-icon fas fa-money-bill-alt"></i>
+                <p>
+                  Bill Entry
+                </p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="{% url 'due_dashboard' %}" class="nav-link">
+                <i class="nav-icon fas fa-calendar-check"></i>
+                <p>
+                  Due Bills
+                </p>
+              </a>
+            </li>
+            {% if request.user.is_superuser %}
+            <li class="nav-item">
+              <a href="{% url 'today' %}" class="nav-link">
+                <i class="nav-icon fas fa-money-bill-alt"></i>
+                <p>
+                   Today Bills
+                </p>
+              </a>
+            </li>
+            {% endif %}
+            
+            
+            
+
+
+          </ul>
+        </nav>
+        <!-- /.sidebar-menu -->
+      </div>
+      <!-- /.sidebar -->
+
+      {% endif %}
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+      <section class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-1">
+            <div class="col-sm-8">
+              <h1>{% block title %}{% endblock title %}</h1>
+            </div>
+            <div class="col-sm-4">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item">{% block breadcrumb %}{% endblock breadcrumb %}</li>
+              </ol>
+            </div>
+          </div>
+        </div><!-- /.container-fluid -->
+      </section>
+      <!-- Main content -->
+      <section class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-md-12">
+              {% block fullcard %}
+              <div class="card">
+                {% block content-header %}{% endblock content-header %}
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col">
+                      {% block content %}
+
+                      {% endblock content %}
+                    </div>
+                  </div>
+                  <!-- /.row -->
+                </div>
+                <!-- ./card-body -->
+
+              </div>
+              {% endblock fullcard %}
+              <!-- /.card -->
+            </div>
+            <!-- /.col -->
+          </div>
+          <!-- /.row -->
+        </div>
+        <!--/. container-fluid -->
+      </section>
+      <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Control Sidebar -->
+    <aside class="control-sidebar control-sidebar-dark">
+      <!-- Control sidebar content goes here -->
+    </aside>
+    <!-- /.control-sidebar -->
+
+
+  </div>
+  <!-- ./wrapper -->
+
+  <!-- REQUIRED SCRIPTS -->
+  <!-- jQuery -->
+  <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'dist/js/jquery.formset.js' %}"> </script>
+  <!-- Bootstrap -->
+  <script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'plugins/toastr/toastr.min.js' %}"></script>
+  <!-- overlayScrollbars -->
+  <script
+    src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
+
+  <!-- AdminLTE App -->
+  <script src="{% static 'dist/js/adminlte.js' %}"></script>
+
+  <!-- OPTIONAL SCRIPTS -->
+  <script src="{% static 'dist/js/demo.js' %}"></script>
+
+  {% if messages %}
+  {% for message in messages %}
+  <script type=text/javascript>
+    toastr.options.progressBar = true;
+    toastr.{{ message.tags }}('{{ message }}')
+  </script>
+  {% endfor %}
+  {% endif %}
+
+  <script src="{% static 'plugins/Datatables/datatables.min.js' %}"></script>
+
+  <script>
+    (function ($) {
+      $('.clickable-row').css('cursor', 'pointer');
+      $(".clickable-row").click(function () {
+        window.location = $(this).data("href");
+      });
+    })(jQuery)
+
+  </script>
+
+  {% block morejs %}
+
+  {% endblock morejs %}
+
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+<!-- templates/bill_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}Bill Detail{% endblock %}
+
+{% block content %}
+<div class="card mt-5">
+    <div class="card-header">
+        <h2 class="card-title">Bill Detail</h2>
+    </div>
+    <div class="card-body">
+        <p class="card-text"><strong>Prefix:</strong> {{ bill.prefix }}</p>
+        <p class="card-text"><strong>Last Bill:</strong> {{ bill.last_bill }}</p>
+        <a href="{% url 'bill-update' %}" class="btn btn-primary">Edit</a>
+    </div>
+</div>
+<div class="card mt-5">
+    <div class="card-header">
+        <h2 class="card-title">GST Details</h2>
+    </div>
+    <div class="my-2">
+        <h5 class="card-text p-3"><strong>Current Percentage:</strong> {{ gst.percent }}</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{% url 'save_gst' %}">
+            <div class="form-group">
+                <label for="percent">Change Percentage:</label>
+                <input type="text" id="percent" name="percent" class="form-control" placeholder="Enter GST Percent">
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit</button>
+        </form>
+        </div>
+
+        <div class="my-2">
+            <h5 class="card-text p-3"><strong>Current GST Number:</strong> {{ gst.gst_number }}</h5>
+        </div>
+    <div class="card-body">
+        <form method="GET" action="{% url 'save_gst_number' %}">
+            <div class="form-group">
+                <label for="percent">Change GST Number (if any):</label>
+                <input type="text" id="gst_num" name="gst_num" class="form-control" placeholder="Enter GST Number">
+            </div>
+            <button type="submit" class="btn btn-primary mt-2">Submit</button>
+        </form>
+        </div>
+</div>
+
+{% endblock %}

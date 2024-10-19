@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Batch Enrollment{% endblock %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2 class="mb-4">Batch Enrollment</h2>
+
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Enroll Students in Batch: {{ batch.batch_id }}</h5>
+
+        <form method="post" action="{% url 'batch_enroll' pk=batch.pk %}">
+          {% csrf_token %}
+          {{ search_form.as_p }}
+          {{ enrollment_form.as_p }}
+          <button type="submit" class="btn btn-primary">Enroll Students</button>
+        </form>
+
+        <a href="{% url 'batch_detail' pk=batch.pk %}" class="btn btn-secondary">Back to Batch Detail</a>
+      </div>
+    </div>
+  </div>
+{% endblock %}

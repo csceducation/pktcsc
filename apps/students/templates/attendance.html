@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Attendance Dashboard</h1>
+
+        <!-- Iterate over each batch -->
+        {% for batch_id, batch_data in data.items %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h2>Batch {{ batch_data.batch_info.batch_id }} - {{ batch_data.batch_info.batch_subject }}</h2>
+                <p>Staff: {{ batch_data.batch_info.batch_staff }}</p>
+            </div>
+            <div class="card-body">
+                <!-- Lab Section -->
+                <h3 class="card-title">Lab Activities</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>System No</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in batch_data.lab %}
+                        <tr>
+                            <td>{{ activity.date }}</td>
+                            <td>{{ activity.entry_time }}</td>
+                            <td>{{ activity.exit_time }}</td>
+                            <td>{{ activity.system_no }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <!-- Theory Section -->
+                <h3 class="card-title">Theory Sessions</h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Content</th>
+                            <th>Entry Time</th>
+                            <th>Exit Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for session in batch_data.theory %}
+                        <tr>
+                            <td>{{ session.date }}</td>
+                            <td>{{ session.content }}</td>
+                            <td>{{ session.entry_time }}</td>
+                            <td>{{ session.exit_time }}</td>
+                            <td>{{ session.status }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Bootstrap JS (Optional, if you need it) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+{% extends 'base.html' %} {% block scriptORstyle %}
+<style>
+  .form-control {
+    width: 200px; /* Adjust width as needed */
+  }
+  .input-group {
+    position: relative;
+  }
+
+  .user-list {
+    position: absolute;
+    top: calc(100% + 10px); /* Adjust the distance from the input */
+    left: 0;
+    width: 200px; /* Adjust width as needed */
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    z-index: 9999;
+  }
+
+  .user-list-item {
+    padding: 0.5rem;
+    cursor: pointer;
+  }
+
+  .user-list-item:hover {
+    background-color: #f0f0f0;
+  }
+
+  .container {
+    position: relative; /* Ensure container is positioned relative */
+  }
+
+  @media (max-width: 768px) {
+    .col-md-6 {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th,
+  td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    background-color: #333;
+    color: #fff;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+</style>
+
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css"
+  rel="stylesheet"
+  type="text/css"
+/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+{% endblock scriptORstyle %} {% block content %}
+<div>
+  <h2>Lab Chart</h2>
+</div>
+<div class="container my-5">
+  <h4>Results for date - {{date}}</h4>
+  <p>you can change the date using below</p>
+  <form id="dateForm">
+    <table>
+      <tr>
+        <td>
+          <label for="inputDate" class="visually-hidden">Select Date</label>
+        </td>
+        <td>
+          <input type="date" id="inputDate" class="form-control" required />
+        </td>
+        <td>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</div>
+
+<div id="visualization"></div>
+<hr class="my-5 shadow shodow-lg" />
+<div class="container mt-3">
+  <form id="studentForm">
+    <table>
+      <tr>
+        <td>
+          <label for="searchInput" class="visually-hidden mr-2"
+            >Search by <br />ID or Name:</label
+          >
+        </td>
+        <td>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control ml-2"
+            placeholder="Search by ID or Name"
+          />
+        </td>
+        <td>
+          <input
+            type="text"
+            id="selectedStudentId"
+            name="student_id"
+            class="form-control ml-2"
+            readonly
+          />
+        </td>
+        <td>
+          <label for="week" class="visually-hidden ml-2">Select Week:</label>
+        </td>
+        <td>
+          <input
+            type="week"
+            id="week"
+            name="week"
+            class="form-control ml-2"
+            disabled
+          />
+        </td>
+        <td>
+          <input type="submit" value="Submit" class="btn btn-info ml-2" />
+        </td>
+      </tr>
+    </table>
+    <div id="userList" class="user-list d-none"></div>
+  </form>
+</div>
+
+<div class="mt-5">
+  <table id="attendanceTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Lab No</th>
+        <th>System No</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceBody"></tbody>
+  </table>
+</div>
+<script>
+  document
+    .getElementById("dateForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      const selectedDate = document.getElementById("inputDate").value;
+      const url = new URL(window.location.href);
+      url.searchParams.set("date", selectedDate);
+
+      window.location.href = url.toString();
+    });
+</script>
+
+<script>
+  const students = {{ students|safe }};
+
+  document.getElementById("studentForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent the form from submitting
+
+      var studentId = document.getElementById("selectedStudentId").value;
+      var weekValue = document.getElementById("week").value;
+      var currentUrl = window.location.href;
+
+      // Check if the URL already contains a query string
+      if (currentUrl.includes("?")) {
+          // Check if the week parameter already exists in the query string
+          if (currentUrl.includes("week=")) {
+              // Replace the existing week parameter with the new value
+              var newUrl = currentUrl.replace(/week=[^&]*/, "week=" + weekValue);
+          } else {
+              // Append the week parameter to the existing query string
+              var newUrl = currentUrl + "&week=" + weekValue;
+          }
+      } else {
+          // Add the week parameter to the URL query string
+          var newUrl = currentUrl + "?week=" + weekValue;
+      }
+
+      // Append the student ID parameter to the URL query string
+      if (!newUrl.includes("student_id=")) {
+          // If student ID parameter doesn't exist, append it
+          newUrl += "&student_id=" + studentId;
+      }
+
+      // Redirect the user to the new URL
+      window.location.href = newUrl;
+  });
+
+  const searchInput = document.getElementById("searchInput");
+  const userList = document.getElementById("userList");
+  const selectedStudentIdInput = document.getElementById("selectedStudentId");
+  const weekInput = document.getElementById("week");
+
+  function populateUserList(searchText) {
+      userList.innerHTML = "";
+      const filteredStudents = students.filter(student =>
+          student.id.toString().includes(searchText) || student.name.toLowerCase().includes(searchText.toLowerCase())
+      );
+
+      filteredStudents.forEach(student => {
+          const listItem = document.createElement("div");
+          listItem.classList.add("user-list-item");
+          listItem.textContent = student.name;
+          listItem.addEventListener("click", function() {
+              selectedStudentIdInput.value = student.id;
+              searchInput.value = student.name;
+              userList.classList.add("d-none");
+              weekInput.disabled = false; // Enable week selection when a student is chosen
+          });
+          userList.appendChild(listItem);
+      });
+
+      if (filteredStudents.length === 0) {
+          const listItem = document.createElement("div");
+          listItem.classList.add("user-list-item");
+          listItem.textContent = "No matching students";
+          listItem.classList.add("disabled");
+          userList.appendChild(listItem);
+      }
+
+      userList.classList.remove("d-none");
+  }
+
+  searchInput.addEventListener("input", function() {
+      const searchText = this.value.trim();
+      populateUserList(searchText);
+  });
+
+  document.addEventListener("click", function(event) {
+      if (!userList.contains(event.target) && event.target !== searchInput) {
+          userList.classList.add("d-none");
+      }
+  });
+</script>
+<script>
+      const systemData = {{ system_data_dict|safe }};
+      const items = [];
+      const groups = [];
+      const dates = new Set(); // Set to store unique dates
+
+      // Iterate through the data and collect unique dates
+      for (const system in systemData) {
+          const systemDataInfo = systemData[system];
+          if (systemDataInfo !== null) {
+              const date = systemDataInfo['date'];
+              dates.add(date);
+
+              groups.push({ id: system, content: system });
+
+              if (Object.keys(systemDataInfo['data']).length === 0) {
+                  // If no data available for the system, push a placeholder item
+                  const today = new Date().toISOString().split('T')[0];
+                  items.push({
+                      id: items.length + 1,
+                      group: system,
+                      content: 'No data available',
+                      start: new Date(`${today}T00:00:00`),
+                      end: new Date(`${today}T00:00:00`)
+                  });
+              } else {
+                
+
+                  // Push data for each student
+                  for (const studentId in systemDataInfo['data']) {
+                      const access = systemDataInfo['data'][studentId];
+                      items.push({
+                          id: items.length + 1,
+                          group: system,
+                          content: studentId? `<a href="/attendance/profile_redirector/${studentId}/">${studentId}</a>` :`<a href="#">${studentId}</a>`,
+                          start: new Date(`${systemDataInfo['date']}T${access.start}:00`),
+                          end: new Date(`${systemDataInfo['date']}T${access.stop}:00`)
+                      });
+                  }
+              }
+          } else {
+              // If systemData[system] is null or None, push a placeholder item
+              const today = new Date().toISOString().split('T')[0];
+              items.push({
+                  id: items.length + 1,
+                  group: system,
+                  content: 'No data available',
+                  start: new Date(`${today}T00:00:00`),
+                  end: new Date(`${today}T00:00:00`)
+              });
+          }
+      }
+
+      const container = document.getElementById('visualization');
+      const options = {
+          orientation: 'top',
+          stack: true,
+          start: new Date(`${[...dates].sort()[0]}T08:00:00`), // Start of the earliest date
+          end: new Date(`${[...dates].sort().slice(-1)[0]}T21:00:00`), // End of the latest date
+          editable: false,
+          zoomable: true,
+          selectable: true,
+          showMajorLabels: true,
+          showCurrentTime: false,
+          format: {
+              minorLabels: {
+                  minute: 'h:mma',
+                  hour: 'ha'
+              }
+          },
+          zoomMin: 18000000,
+          zoomMax: 18000000,
+      };
+
+      const timeline = new vis.Timeline(container);
+      timeline.setOptions(options);
+      timeline.setGroups(groups);
+      timeline.setItems(items);
+</script>
+<script>
+  // Sample student data
+  const studentData = {{student_data|safe}};
+
+  const tableBody = document.getElementById('attendanceBody');
+  let prevDate = null;
+  let rowspan = 0;
+
+  studentData.forEach(entry => {
+    const tr = document.createElement('tr');
+
+    if (entry.date !== prevDate) {
+      prevDate = entry.date;
+      rowspan = studentData.filter(item => item.date === entry.date).length;
+      const dateCell = document.createElement('td');
+      dateCell.textContent = entry.date;
+      dateCell.rowSpan = rowspan;
+      tr.appendChild(dateCell);
+    }
+
+    const labCell = document.createElement('td');
+    labCell.textContent = entry.lab_no;
+    tr.appendChild(labCell);
+
+    const systemCell = document.createElement('td');
+    systemCell.textContent = entry.system_no;
+    tr.appendChild(systemCell);
+
+    const startCell = document.createElement('td');
+    startCell.textContent = entry.start_time;
+    tr.appendChild(startCell);
+
+    const endCell = document.createElement('td');
+    endCell.textContent = entry.end_time;
+    tr.appendChild(endCell);
+
+    tableBody.appendChild(tr);
+  });
+</script>
+
+{% endblock content %}

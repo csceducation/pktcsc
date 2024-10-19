@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+
+  {% if object %}
+    Update {{ object }}
+  {% else %}
+    Add new student
+  {% endif %}
+
+{% endblock title %}
+
+
+{% block content %}
+{% comment %} <div class="container mt-5">
+  <h2>Student Details</h2>
+  <table class="table">
+      <tbody>
+              <tr>
+                  <td>Enquiry Number </td>
+                  <td>{{ enquiry.enquiry_no }}</td>
+                  <!-- Add more table cells based on your model fields -->
+              </tr>
+              <tr>
+                  <td>Name </td>
+                  <td>{{ enquiry.name }}</td>
+                  <!-- Add more table cells based on your model fields -->
+              </tr>
+              <tr>
+                  <td>Mobile Number</td>
+                  <td>{{ enquiry.mobile_number }}</td>
+                  <!-- Add more table cells based on your model fields -->
+              </tr>
+              <tr>
+                  <td>Date of Birth </td>
+                  <td>{{ enquiry.date_of_birth }}</td>
+                  <!-- Add more table cells based on your model fields -->
+              </tr>
+      </tbody>
+  </table>
+</div> {% endcomment %}
+<form action="" method="POST" enctype="multipart/form-data" id="myform">
+  {% csrf_token %}
+
+  {% include 'corecode/form_snippet.html' %}
+  
+  {% if object %}
+    <input type="submit" class="btn btn-primary" value="Update Record">
+  {% else %}
+    <input type="submit" class="btn btn-primary" value="Add new student">
+  {% endif %}
+</form>
+
+<script>
+  document.getElementsByName('if_enq')[0].onchange = () => {
+    
+  }
+  document.getElementById('myform').addEventListener('input', function(e) {
+    if (e.target.tagName === 'INPUT' && e.target.type !== 'email') {
+        e.target.value = e.target.value.toUpperCase();
+    }
+});
+
+</script>
+{% endblock content %}

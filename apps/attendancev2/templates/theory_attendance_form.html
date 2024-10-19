@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-8">
+            <h3 class="d-inline font-weight-bold">Batch Theory Attendance</h3>
+        </div>
+        <div class="col-4 text-end">
+            <a href="{% url 'batch_detail' pk=batch.id %}" class="btn btn-info shadow-sm">Return to Batch Details</a>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <h1 class="mt-5">Attendance Form</h1>
+    
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="batch_id" value="{{ batch_id }}">
+      <input type="hidden" name="date" value="{{ date }}">
+      <div class="mb-3">
+        <label for="content" class="form-label">Topics covered today</label><br>
+        
+        <div class="row">
+          {% for key,choice in org_contents.items %}
+            <div class="col-md-4">
+              <input type="checkbox" id="choice_{{ forloop.counter }}" name="content" value="{{ choice }}" {% if key in contents %} disabled {% endif %}>
+              <label for="choice_{{ forloop.counter }}" >{{key}} : {{ choice }} </label>
+            </div>
+          {% endfor %}
+        </div>
+        
+      </div>
+      <div class="row mb-3">
+        <div class="col">
+          <label for="entrytime" class="form-label">Entry Time</label>
+          <input type="time" class="form-control" id="entrytime" name="entrytime" value="{{ data.entry_time }}">
+        </div>
+        <div class="col">
+          <label for="exittime" class="form-label">Exit Time</label>
+          <input type="time" class="form-control" id="exittime" name="exittime" value="{{ data.exit_time }}">
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Students</label>
+        {% for enrol_no, student_data in data.students.items %}
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="{{ enrol_no }}" name="students" value="{{ enrol_no }}" {% if student_data.status == 'present' %}checked{% endif %}>
+          <label class="form-check-label" for="student_{{ enrol_no }}">
+            {{ enrol_no }}({{student_data.name}})
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+{% endblock content %}
