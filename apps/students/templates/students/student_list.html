@@ -3,6 +3,7 @@
 {% block title %}Students{% endblock title %}
 
 {% block breadcrumb %}
+<a href="{% url 'student-inactive-list' %}" style="font-size: 0.8rem;" class="btn btn-primary">Inactive Students</a>
 {% endblock breadcrumb %}
 
 {% block content %}
@@ -11,12 +12,11 @@
       <thead class="thead-light">
         <tr>
           <th>S/N</th>
-          <th>Fullname</th>
           <th>Registration Number</th>
+          <th>Fullname</th>
           <th>Current Class</th>
           <th>Gender</th>
           <th>Mobile Phone Number</th>
-          <th>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -24,12 +24,11 @@
         {% for student in students %}
           <tr class='clickable-row' data-href="{% url 'student-detail' student.id %}">
             <td>{{ forloop.counter}}</td>
-            <td>{{ student.student_name}}</td>
             <td>{{ student.enrol_no}}</td>
+            <td>{{ student.student_name}}</td>
             <td>{{ student.course}}</td>
             <td>{{ student.gender}}</td>
             <td>{{ student.mobile_number}}</td>
-            <td>{{ student.get_current_status_display}}</td>
           </tr>
         {% endfor %}
 

@@ -1,0 +1,528 @@
+{% extends 'base.html' %}
+{% block scriptORstyle %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 10px;
+        }
+        .grid-item {
+            padding: 10px;
+            /* border: 1px solid #ddd; */
+            border-radius: 5px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .analysis-text {
+            grid-column: 1 / -1;
+        }
+        canvas {
+            /* width: 100%; */
+            /* height: auto; */
+        }
+        .share-item {
+            display: flex;
+            /* flex-direction: row; */
+            justify-content: center;
+        }
+        .triangle-up {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 15px solid green;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .triangle-down {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid red;
+            display: inline-block;
+            margin-right: 5px;
+        }
+    </style>
+{% endblock scriptORstyle %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Dashboard</h3>
+            </div>
+            <div class="card-body">
+                <div class="mb-3 d-flex flex-row align-items-center">
+                    <label for="rangeType" class="form-label mx-2">Select Range Type:</label>
+                    <select id="rangeType" class="form-control w-25">
+                        <option value="ytd">Year-to-Date (YTD)</option>
+                        <option value="year">Year</option>
+                        <option value="month">Month</option>
+                        <option value="week">Week</option>
+                        <option value="range">Custom Range</option>
+                    </select>
+                </div>
+
+                <!-- Year Selector (hidden by default) -->
+                <div id="yearSelector" class="mb-3" style="display: none;">
+                    <label for="yearInput" class="form-label">Select Year:</label>
+                    <select id="yearInput" class="form-control w-25">
+                        <!-- Dynamically filled with JavaScript -->
+                    </select>
+                </div>
+
+                <!-- Month Selector (hidden by default) -->
+                <div id="monthSelector" class="mb-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="monthYearInput" class="form-label">Select Year:</label>
+                            <select id="monthYearInput" class="form-control w-25">
+                                <!-- Dynamically filled with JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="monthInput" class="form-label">Select Month:</label>
+                            <select id="monthInput" class="form-control w-25">
+                                <option value="01">January</option>
+                                <option value="02">February</option>
+                                <option value="03">March</option>
+                                <option value="04">April</option>
+                                <option value="05">May</option>
+                                <option value="06">June</option>
+                                <option value="07">July</option>
+                                <option value="08">August</option>
+                                <option value="09">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Week Selector (hidden by default) -->
+                <div id="weekSelector" class="mb-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="weekYearInput" class="form-label">Select Year:</label>
+                            <select id="weekYearInput" class="form-control w-25">
+                                <!-- Dynamically filled with JavaScript -->
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="weekInput" class="form-label">Select Week:</label>
+                            <select id="weekInput" class="form-control w-25">
+                                <!-- Dynamically filled with JavaScript -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Date Range Selector (hidden by default) -->
+                <div id="dateRangeSelector" class="mb-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="startDate" class="form-label">Start Date:</label>
+                            <input type="date" id="startDate" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="endDate" class="form-label">End Date:</label>
+                            <input type="date" id="endDate" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <button id="applyBtn" class="btn btn-primary">Get Admissions</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Trends</h2>
+        <div class="grid-container">
+            <div class="grid-item">Previous day admission and today's admission analysis...
+                <div id="day" class="fs-4 fw-bold d-flex justify-content-center  align-items-center h6 my-2"></div>
+                <div id="week" class="fs-4 fw-bold d-flex justify-content-center align-items-center h6 my-2"></div>
+                <div id="month" class="fs-4 fw-bold d-flex justify-content-center align-items-center h6 my-2"></div>
+            </div>
+            <div class="grid-item"><canvas id="day-wise"></canvas></div>
+            <div class="grid-item"><canvas id="week-wise"></canvas></div>
+            <div class="grid-item"><canvas id="month-wise"></canvas></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Share</h2>
+        <div class="row">
+            <div class="col"><canvas id="course-share" width="400px" height="400px"></canvas></div>
+            <div class="col"><canvas id="staff-share" width="400px" height="400px"></canvas></div>
+            <!-- <div class="analysis-text">Analysis text for shares...</div> -->
+        </div>
+        <div class="row">
+            <div class="col"><canvas id="scheme-share" width="400px" height="400px"></canvas></div>
+            <div class="col"><canvas id="" width="400px" height="400px"></canvas></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Conversion</h2>
+        <div>
+            <div ><canvas id="staff-conversion" height="100%"></canvas></div>
+            <div ><canvas id="course-conversion" height="100%"></canvas></div>
+        </div>
+    </div>
+    <script>
+        var resp = {{data|safe}};
+        var charts = {};
+        $(document).ready(function() {
+            let formattedQuery;
+            const currentYear = new Date().getFullYear();
+            const currentMonth = (new Date().getMonth() + 1).toString().padStart(2, '0');
+            
+            // Fill year dropdowns with options from (current year - 5) to (current year + 1)
+            for (let year = currentYear - 5; year <= currentYear + 1; year++) {
+                $('#yearInput, #monthYearInput, #weekYearInput').append(
+                    $('<option>', {
+                        value: year,
+                        text: year,
+                        selected: year === currentYear
+                    })
+                );
+            }
+            
+            // Fill week dropdown with weeks 1-53
+            for (let week = 1; week <= 53; week++) {
+                $('#weekInput').append(
+                    $('<option>', {
+                        value: week.toString().padStart(2, '0'),
+                        text: 'Week ' + week
+                    })
+                );
+            }
+            
+            // Set current month as selected
+            $('#monthInput').val(currentMonth);
+            
+            // Set defaults for date inputs
+            const today = new Date();
+            const formattedToday = today.toISOString().split('T')[0];
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+            
+            $('#startDate').val(firstDayOfMonth);
+            $('#endDate').val(formattedToday);
+            
+            // Show/hide relevant selectors based on range type selection
+            $('#rangeType').change(function() {
+                const selectedType = $(this).val();
+                
+                // Hide all selectors first
+                $('#yearSelector, #monthSelector, #weekSelector, #dateRangeSelector').hide();
+                
+                // Show the relevant selector
+                switch(selectedType) {
+                    case 'year':
+                        $('#yearSelector').show();
+                        break;
+                    case 'month':
+                        $('#monthSelector').show();
+                        break;
+                    case 'week':
+                        $('#weekSelector').show();
+                        break;
+                    case 'range':
+                        $('#dateRangeSelector').show();
+                        break;
+                }
+                
+                updateFormattedQuery();
+            });
+            
+            // Update query when any input changes
+            $('#yearInput, #monthYearInput, #monthInput, #weekYearInput, #weekInput, #startDate, #endDate').change(function() {
+                updateFormattedQuery();
+            });
+            
+            // Apply button click handler
+            $('#applyBtn').click(function() {
+                const query = $('#formattedQuery').text();
+                simulateGetAdmissions(query);
+            });
+            
+            // Function to update the formatted query display
+            function updateFormattedQuery() {
+                const selectedType = $('#rangeType').val();
+                formattedQuery = '';
+                
+                switch(selectedType) {
+                    case 'ytd':
+                        formattedQuery = 'ytd';
+                        break;
+                    case 'year':
+                        formattedQuery = `year:${$('#yearInput').val()}`;
+                        break;
+                    case 'month':
+                        formattedQuery = `month:${$('#monthYearInput').val()}-${$('#monthInput').val()}`;
+                        break;
+                    case 'week':
+                        formattedQuery = `week:${$('#weekYearInput').val()}-${$('#weekInput').val()}`;
+                        break;
+                    case 'range':
+                        formattedQuery = `range:${$('#startDate').val()} to ${$('#endDate').val()}`;
+                        break;
+                }
+                
+                // $('#formattedQuery').text(formattedQuery);
+                console.log(formattedQuery);
+
+            }
+            
+            // Function to simulate the get_admissions API call
+            function simulateGetAdmissions(query) {
+                fetch(`${window.location.origin}/v2/dashboard?api=1&date=${formattedQuery}`).then(res=>res.json()).then((d)=>{resp = d;render(resp);});
+                // render(resp);
+            }
+            
+            // Helper function to format dates
+            function formatDate(date) {
+                return date.toISOString().split('T')[0];
+            }
+            
+            // Helper function to get date of ISO week
+            function getDateOfISOWeek(week, year) {
+                const simple = new Date(year, 0, 1 + (week - 1) * 7);
+                const dayOfWeek = simple.getDay();
+                const date = simple;
+                date.setDate(date.getDate() - date.getDay() + 1);
+                return date;
+            }
+            
+            // Initialize formatted query
+            updateFormattedQuery();
+        });
+        
+            
+            
+            function getLabelData(trends){
+                labels = [];
+                data = [];
+                trends.forEach(element => {
+                    labels.push(element.date);
+                    data.push(element.total);
+                });
+
+                return [data,labels];
+            }
+
+            function getLabelDataDonut(feed){
+                labels = [];
+                data = [];
+                feed.forEach(element => {
+                    let [key,val] = Object.values(element)
+                    labels.push(key);
+                    data.push(val);
+                });
+
+                return [data,labels];
+            }
+            function getLabelDataConversion(feed){
+                labels = [];
+                enquiryData = [];
+                admissionData = [];
+                conversionRateData = [];
+                feed.forEach(element => {
+                    let [n,e,a,c] = Object.values(element);
+                    labels.push(n)
+                    enquiryData.push(e)
+                    admissionData.push(a)
+                    conversionRateData.push(c)
+                });
+                return [labels,enquiryData,admissionData,conversionRateData];
+            }
+            function renderTrendChart(title, labels, data, canvasId) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+
+                charts[canvasId] = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: title,
+                            data: data,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            fill: false,
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Date'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Total'
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+            function renderDonutChart(title, labels, data, canvasId) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+
+                charts[canvasId] =new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: title,
+                            data: data,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            title: {
+                                display: true,
+                                text: title
+                            }
+                        }
+                    }
+                });
+            }
+            function renderConversionChart(title,type, labels, enquiriesData, admissionsData, conversionRateData, canvasId) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+                charts[canvasId] =new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Total Enquiries',
+                                data: enquiriesData,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Total Admissions',
+                                data: admissionsData,
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Conversion Rate',
+                                data: conversionRateData,
+                                borderWidth: 1,
+                                type: 'line',
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: `${type}`
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Total'
+                                },
+                                beginAtZero: true
+                            },
+                            y1: {
+                                position: 'right',
+                                title: {
+                                    display: true,
+                                    text: 'Conversion Rate (%)'
+                                },
+                                beginAtZero: true,
+                                grid: {
+                                    drawOnChartArea: false // only want the grid lines for one axis to show up
+                                }
+                            }
+                        }
+                    }
+                });
+                // chart.resize(400,600);
+            }
+
+            function HikeIndicator(num,id) {
+                let indicator = document.getElementById(id);
+                if (num >= 0) {
+                    indicator.innerHTML = `<span class="text-success d-flex align-items-center"><span class="triangle-up"></span> ${id} - ${num}%</span>`;
+                } else {
+                    indicator.innerHTML = `<span class="text-danger d-flex align-items-center"><span class="triangle-down"></span>${id} - ${Math.abs(num)}%</span>`;
+                }
+            }
+            function drawComparisions(data,id){
+              if (data.length >= 2){
+                p = data[data.length - 2];
+                t = data[data.length - 1];
+                diff = t.total-p.total;
+
+                HikeIndicator(diff,id)
+              }
+              
+            }
+            function drawTrends(trends){
+                // console.log(trends);
+                day_trend = trends['day_wise'];
+                week_trend = trends['week_wise'];
+                month_trend = trends['month_wise'];
+
+                let [day_data,day_label] = getLabelData(day_trend);
+                let [week_data,week_label] = getLabelData(week_trend);
+                let [month_data,month_label] = getLabelData(month_trend);
+
+                // console.log(day_data,day_label);
+                renderTrendChart("day wise Admissions",day_label,day_data,"day-wise");
+                renderTrendChart("week wise Admissions",day_label,week_data,"week-wise");
+                renderTrendChart("month wise Admissions",day_label,month_data,"month-wise");
+            }
+
+            function drawDonuts(feed,type){
+                let [data,label] = getLabelDataDonut(feed);
+                console.log(data,label);
+                renderDonutChart(`${type} admission share`,label,data,`${type}-share`);
+            }
+            function drawConversions(feed,type){
+                let [label,enquiryData,admissionData,conversionRateData] = getLabelDataConversion(feed);
+                renderConversionChart(`${type} wise conversion`,type,label,enquiryData,admissionData,conversionRateData,`${type}-conversion`);
+            }
+            // console.log(resp);
+            function render(data){
+                for (let e in charts){
+                    charts[e].destroy()
+                }
+
+                drawTrends(resp['trends']);
+                drawDonuts(resp['course'],'course');
+                drawDonuts(resp['staff'],'staff');
+                drawDonuts(resp['scheme'],'scheme');
+                drawConversions(resp['enquiry']['staff_conversion'],'staff')
+                drawConversions(resp['enquiry']['course_conversion'],'course')
+                drawComparisions(resp['trends']['day_wise'],"day");
+                drawComparisions(resp['trends']['week_wise'],"week");
+                drawComparisions(resp['trends']['month_wise'],"month");
+            }
+            render(resp);
+      </script>
+{% endblock content %}

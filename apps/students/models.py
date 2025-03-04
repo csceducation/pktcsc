@@ -1,15 +1,16 @@
 from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from datetime import datetime 
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
-from datetime import date
+from datetime import date,datetime
 from apps.course.models import CourseModel
 from apps.staffs.models import Staff
-from apps.corecode.models import StudentClass , Book , Subject 
+from apps.corecode.models import StudentClass , Book , Subject , Schemes
 from apps.corecode.models import Time
 from ..enquiry.models import *
-from apps.corecode.models import User
+from apps.corecode.models import User,Inventory
 
 class Student(models.Model):
     username = models.CharField(max_length=20,blank=True)
@@ -26,10 +27,11 @@ class Student(models.Model):
         ("Others", "Others"),
     ]
     STATUS_CHOICES = [("active", "Active"), ("inactive", "Inactive")]
-    if_enq = models.ForeignKey(Enquiry,on_delete=models.PROTECT,default=None,null=True)
+    if_enq = models.ForeignKey(Enquiry,on_delete=models.PROTECT,default=None,null=True) #enquiry relations
     current_status = models.CharField(
         max_length=10, choices=STATUS_CHOICES, default="active"
     )
+    scheme = models.ForeignKey(Schemes,on_delete=models.PROTECT,default=None,null=True)
     student_name = models.CharField("Student Name", max_length=255, blank=False, default="")
     enrol_no = models.IntegerField("Enrollment Number",default=0,null=False,unique=True)
     rel_name = models.CharField(
@@ -75,7 +77,10 @@ class Student(models.Model):
     mobile_number = models.CharField("Mobile Number",
         validators=[mobile_num_regex], max_length=13, blank=True
     )
-    email = models.EmailField("Email", blank=False, default="")
+    alt_number = models.CharField("Alternate Number",
+        validators=[mobile_num_regex], max_length=13, blank=True
+    )
+    email = models.EmailField("Email", blank=True, null=True,default="")
  
     #personal Details
 
@@ -156,6 +161,38 @@ class Bookmodel(models.Model):
         return reverse("student-detail", kwargs={"pk": self.student.pk})
     remark = models.CharField("Remark",max_length=2046,blank=True,default=None)
     last_updated = models.DateTimeField(auto_now=True)
+    
+    def save(self,*args,**kwargs):
+        
+        if self.received_date < datetime.strptime("2025-01-01","%Y-%m-%d").date():
+            super().save(*args, **kwargs)
+        else:
+            orders,total = Inventory().book_stock(self.received_book.id)
+            print(orders,total)
+            if total<=0:
+                raise ValidationError(f'Stock for the book {self.received_book} is empty please add some stock')
+            else:
+                id = min(list(map(lambda x:x['id'],orders)))
+                obj = Inventory.objects.get(id=id)
+                obj.items[str(self.received_book.id)] -= 1
+                obj.save()
+            super().save(*args,**kwargs)
+    
+    def delete(self, *args, **kwargs):
+        if self.received_date < datetime.strptime("2025-01-01","%Y-%m-%d").date():
+            super().delete(*args, **kwargs)
+        else:
+            orders,total = Inventory().book_stock(self.received_book.id)
+            print(orders,total)
+            if total<=0:
+                raise ValidationError(f'Stock for the book {self.book} is empty please add some stock')
+            else:
+                id = min(list(map(lambda x:x['id'],orders)))
+                obj = Inventory.objects.get(id=id)
+                obj.items[str(self.received_book.id)] += 1
+                obj.save()
+                super().delete(*args, **kwargs)
+        
 class Classmodel(models.Model):
     student = models.ForeignKey(Student,on_delete=models.PROTECT,blank=True)
     finised_subject = models.CharField("Finised Subject",max_length=255,default=None,blank=False)
@@ -172,8 +209,8 @@ class Classmodel(models.Model):
 class Exammodel(models.Model):
     student = models.ForeignKey(Student,on_delete=models.PROTECT)
     subject = models.ForeignKey(Subject,on_delete=models.CASCADE)
-    exam_date = models.DateField("Examed date",default=timezone.now)
-    contected_mode = models.CharField("Contected mode",choices=[("Online","Online"),("Offline","Offline")],max_length=255,blank=True,null=True,default=None)
+    exam_date = models.DateField("Exam date",default=timezone.now)
+    contected_mode = models.CharField("Mode",choices=[("Online","Online"),("Offline","Offline")],max_length=255,blank=True,null=True,default=None)
     theory_mark =models.FloatField("Theory mark",blank=True,null=True,default=None)
     paratical_mark = models.FloatField("Paratical mark",blank=True,default=None)
     mark = models.FloatField("Total mark",blank=True)
@@ -197,17 +234,10 @@ class Certificatemodel(models.Model):
     def get_absolute_url(self):
         return reverse("student-detail", kwargs={"pk": self.student.pk})
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    def save(self,*args,**kwargs):
+        self.course = self.student.course
+        
+        super().save(*args,**kwargs)
     
     """ 
     STATUS_CHOICES = [("active", "Active"), ("inactive", "Inactive")]
@@ -252,3 +282,33 @@ class Certificatemodel(models.Model):
 class StudentBulkUpload(models.Model):
     date_uploaded = models.DateTimeField(auto_now=True)
     csv_file = models.FileField(upload_to="students/bulkupload/")
+
+
+class BreakDetails(models.Model):
+    student = models.ForeignKey(Student,on_delete=models.PROTECT)
+    break_start = models.DateField(blank=False, null=False)
+    break_end = models.DateField(blank=False,null=False)
+    reason = models.TextField(blank =True)
+    followup = models.JSONField(default=list, blank=True)
+    is_joined = models.BooleanField(default=False)
+    
+    def set_followups(self,data):
+        
+        return self.followup.append(data)
+    
+    def get_followup(self,date):
+        for doc in self.followup:
+            if doc['date'] == date:
+                return doc
+        else:
+            return {}
+        
+    def save(self,*args,**kwargs):
+        if self.is_joined:
+            self.student.current_status = 'active'
+            self.student.save()
+        else:
+            self.student.current_status = 'inactive'
+            self.student.save()
+            
+        super().save(*args,**kwargs)

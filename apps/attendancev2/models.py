@@ -1,5 +1,5 @@
 from django.db import models
-from .manager import AttendanceManager
+from .manager import AttendanceManager,AttendanceManagerV2
 from datetime import datetime
 from csc_app.settings import db
 

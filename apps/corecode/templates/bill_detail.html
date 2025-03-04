@@ -9,8 +9,8 @@
         <h2 class="card-title">Bill Detail</h2>
     </div>
     <div class="card-body">
-        <p class="card-text"><strong>Prefix:</strong> {{ bill.prefix }}</p>
-        <p class="card-text"><strong>Last Bill:</strong> {{ bill.last_bill }}</p>
+        <p class="card-text"><strong>Prefix:</strong> {{ billx.prefix }}</p>
+        <p class="card-text"><strong>Last Bill:</strong> {{ billx.last_bill }}</p>
         <a href="{% url 'bill-update' %}" class="btn btn-primary">Edit</a>
     </div>
 </div>
@@ -43,6 +43,22 @@
             <button type="submit" class="btn btn-primary mt-2">Submit</button>
         </form>
         </div>
+        <div class="my-2">
+            <h5 class="card-text p-3"><strong>Current Opening Balance:</strong> {{ bill.opening_balance }} last changed on : {{bill.date}}</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'update_opening_balance' %}">
+           
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="percent">Change Opening balance</label>
+                    <input type="number" id="op" name="op" class="form-control" placeholder="Enter Ammount">
+                    <br>
+                    <input type="date" id="op_date" name="op_date" class="form-control" placeholder="Date">
+                </div>
+                <button type="submit" class="btn btn-primary mt-2">Submit</button>
+            </form>
+            </div>
 </div>
 
 {% endblock %}

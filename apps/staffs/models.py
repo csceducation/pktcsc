@@ -54,7 +54,7 @@ class Staff(models.Model):
     resume = models.ImageField("Resume",blank=True, upload_to="staff/certificates/")
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True,related_name='staff_profile')
-
+    known_subjects = models.ManyToManyField("corecode.Subject",blank=True)
 
     def __str__(self):
         return f"{self.name}"
@@ -83,3 +83,4 @@ class Staff(models.Model):
         # Delete the associated user before deleting the Staff instance
         self.save(from_save_update=False)
         super().delete(*args, **kwargs)
+        

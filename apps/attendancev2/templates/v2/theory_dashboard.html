@@ -1,0 +1,651 @@
+{% extends 'base.html' %}
+
+{% block scriptORstyle %}
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"
+  integrity="sha512-KZmyTq3PLx9EZl0RHShHQuXtrvdJ+m35tuOiwlcZfs/rE7NZv29ygNA8SFCkMXTnYZQK2OX0Gm2qKGfvWEtRXA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<script src="https://cdn.plot.ly/plotly-2.25.2.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+{% load static %}
+<script src="{% static '/dist/js/analytics/chartFunctions.js' %}"></script>
+<style>
+    
+    /* Scrollable List Container */
+    .scrollable-list-container {
+        max-height: 150px; /* Limit the height for a scrollable area */
+        overflow-y: auto; /* Enable vertical scrolling */
+        padding: 0; /* Remove extra padding for better alignment */
+    }
+
+    /* List Group */
+    .list-group {
+        margin: 0; /* Remove default margin */
+        padding: 0; /* Remove default padding */
+    }
+
+    /* List Items */
+    .list-group-item {
+        font-size: 1rem; /* Standardize font size */
+        padding: 0.75rem 1rem; /* Add padding for clickable area */
+        border: none; /* Remove borders between items */
+        border-bottom: 1px solid #eee; /* Add subtle border between items */
+        cursor: pointer; /* Show pointer cursor */
+        transition: background-color 0.3s ease; /* Smooth hover effect */
+    }
+
+    .list-group-item:last-child {
+        border-bottom: none; /* Remove border for the last item */
+    }
+
+    /* Hover Effect */
+    .list-group-item:hover {
+        background-color: #e6f0ff; /* Highlight background on hover */
+        color: #0056b3; /* Highlight text color on hover */
+    }
+
+    /* Scrollbar Styling (Optional) */
+    .scrollable-list-container::-webkit-scrollbar {
+        width: 8px;
+    }
+    .scrollable-list-container::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 4px;
+    }
+    .scrollable-list-container::-webkit-scrollbar-thumb:hover {
+        background: #999;
+    }
+
+  /* Remove D3's default rounded corners */
+  .chart-container {
+      width: 100%;
+      overflow-x: scroll;
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;     /* Firefox */
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  .chart-container::-webkit-scrollbar {
+      display: none;
+  }
+
+  .timeline-cell {
+      /* fill: #3e2bab; */
+      opacity: 0.8;
+      cursor: pointer;
+  }
+
+  .timeline-cell:hover {
+      /* fill:#5949b6; */
+      opacity: 1;
+  }
+
+  .axis-label {
+      font-size: 12px;
+
+  /* Remove D3's default rounded corners */
+  .domain, .tick line, .tick text {
+      stroke-width: 1px;
+      font-weight: 400;
+  }
+  .dark-color {
+        color: #4b35c5;
+  }
+  .metric-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 100%;
+            transition: transform 0.2s;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 0.5rem 0;
+        }
+
+        .metric-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hours-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .hours-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+
+        .hours-item:last-child {
+            border-bottom: none;
+        }
+
+        .hours-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .batch-number {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .hours-value {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .dashboard-title {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+        }
+
+        .icon-primary { background-color: #e8f4ff; color: #0d6efd; }
+        .icon-success { background-color: #e8f8f5; color: #198754; }
+        .icon-info { background-color: #e8f6ff; color: #0dcaf0; }
+</style>
+{% endblock scriptORstyle %} 
+
+{% block content %}
+<div ng-app="TheoryDashboardApp" ng-controller="TheoryDashboardController">
+    <div>
+        <h2 class="dark-color font-weight-bold text-center">Theory Dashboard</h2>
+        <div>
+            <label for="feature">Select a feature</label>
+            <select ng-model="feature" id="feature" ng-change="updateDashboard()" class="form-control">
+                <option value="1">Theory Schedule</option>
+                <option value="2">Student Dashboard</option>
+                <option value="3">Staff Dashboard</option>
+            </select>
+        </div>
+    </div>
+    <hr>
+    
+    <div class="container-fluid" ng-show="visibleDashboards['studentDashboard'] || visibleDashboards['staffDashboard']">
+        <div class="d-flex flex-row justify-content-between align-items-center my-2">
+        <div>
+            <label for="filterType">Select Filter:</label>
+            <select id="filterType" class="form-control">
+              <option value="year">Year</option>
+              <option value="month">Month</option>
+              <option value="dateRange">Date Range</option>
+            </select>
+          </div>
+        
+          <div id="yearFilter">
+            <label for="year">Year:</label>
+            <input type="number" id="year" placeholder="Enter year" class="form-control">
+          </div>
+        
+          <div id="monthFilter" style="display: none;">
+            <label for="month">Month:</label>
+            <input type="month" id="month" class="form-control">
+          </div>
+        
+          <div id="dateRangeFilter" style="display: none;" class="row">
+            <div class="row">
+                <div class="col">
+                    <label for="fromDate">From:</label>
+                    <input type="date" id="fromDate" class="form-control">
+                </div>
+                <div class="col">
+                    <label for="toDate">To:</label>
+                    <input type="date" id="toDate" class="form-control">
+                </div>
+            </div>
+          </div>
+        
+          <div><button ng-click="getDate()" class="btn btn-primary">set Date</button></div>
+          <div ng-show="false">
+            <p>Selected Date Range:</p>
+            <p>From: <span id="selectedFrom">-</span></p>
+            <p>To: <span id="selectedTo">-</span></p>
+          </div>
+
+        </div>
+        <hr>
+        <div class="">
+            <!-- Search Input -->
+            <div class="">
+                <input
+                    type="text"
+                    class="form-control search-input w-50"
+                    ng-model="searchQuery"
+                    placeholder="Search Student or Staff"
+                />
+            </div>
+        
+            <!-- Scrollable List -->
+            <div class="
+             scrollable-list-container my-1">
+                <ul class="list-group">
+                    <li
+                        class="list-group-item"
+                        ng-repeat="data in filteredData"
+                        ng-click="selectData(data)"
+                    >
+                        <strong>[[data.id]]</strong> - [[data.name]]
+                    </li>
+                </ul>
+                <p ng-if="filteredData.length == 0" class="text-danger my-1">No data found for the name</p>
+            </div>
+        </div>
+        
+        <div ng-if="visibleDashboards['studentDashboard']">
+            <h2>Student Dashboard</h2>
+
+
+        </div>
+
+        <div ng-if="visibleDashboards['staffDashboard']">
+            <div ng-show="dashboardData.batch_info.length > 0" class="container mt-4">
+                <div class="container py-5">
+                    <h2 class="dashboard-title text-center display-5 mb-5">Summary of the Staff</h2>
+            
+                    <!-- Metrics Cards -->
+                    <div class="row mb-4 g-3 text-center ">
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="icon-wrapper icon-primary">
+                                    <i class="fas fa-book fa-lg"></i>
+                                </div>
+                                <div class="metric-label">Number of Batches</div>
+                                <div class="metric-value">[[dashboardData.batch_info.length]]</div>
+                            </div>
+                        </div>
+            
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="icon-wrapper icon-success">
+                                    <i class="fas fa-users fa-lg"></i>
+                                </div>
+                                <div class="metric-label">Total Students</div>
+                                <div class="metric-value">[[totalStudents]]</div>
+                            </div>
+                        </div>
+            
+                        <div class="col-md-4">
+                            <div class="metric-card">
+                                <div class="icon-wrapper icon-info">
+                                    <i class="fas fa-clock fa-lg"></i>
+                                </div>
+                                <div class="metric-label">Total Hours</div>
+                                <div class="metric-value" id="totalHours">[[cumTotalHours]]</div>
+                            </div>
+                        </div>
+                    </div>
+            
+                    <!-- Hours by Batch -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-white">
+                            <h5 class="card-title mb-0">Hours by Batch</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="hours-list">
+                                <li class="hours-item" ng-repeat="(num, hrs) in totalHours">
+                                    <span class="batch-number">Batch [[num]] - </span>
+                                    <span class="hours-value">[[hrs]] hrs</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            
+            
+                <!-- Chart 1 Section -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div id="chart1" class="chart-container">
+                            <!-- Chart 1 content -->
+                        </div>
+                    </div>
+                </div>
+            
+                <!-- Batches Section -->
+                <div class="row">
+                    <div ng-repeat="(batchId, batchData) in dashboardData.batch_data" class="col-md-6 mb-4">
+                        <h3>Batch [[ batchId ]] - [[ getBatchSubject(batchId) ]]</h3>
+                        <div id="chart-[[ batchId ]]" class="chart"></div>
+                    </div>
+            
+                    <!-- Ensure it fits well on smaller screens -->
+                    <div ng-if="dashboardData.batch_data.length % 2 != 0" class="col-12">
+                        <!-- Empty section for the last chart if odd count -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>        
+
+    </div>
+
+    <!-- Dynamic dashboards -->
+    <div class="chart-container container m-2" ng-if="visibleDashboards['theorySchedule']">
+        <div id="timeline" class="timeline p-3"></div>
+    </div>
+
+<script>
+    
+    angular.module('TheoryDashboardApp', [])
+        .config(function($interpolateProvider) {
+            $interpolateProvider.startSymbol('[[').endSymbol(']]');
+    }).controller('TheoryDashboardController', ['$scope', '$http', '$filter','$timeout',function ($scope, $http,$filter,$timeout) {
+        $scope.host = window.location.origin;
+        $scope.theorySheduleData = {{data | safe}};
+        $scope.selectedStudentOrStaff = null;
+        $scope.dashboardData = null;
+        $scope.staffs = {{staffs | safe}};
+        $scope.students = {{students | safe}};
+        $scope.searchableData = $scope.staffs;
+        $scope.searchQuery = '';
+        $scope.filteredData = null;
+        $scope.feature = "3";
+        $scope.visibleDashboards = {
+            theorySchedule: false,
+            studentDashboard: false,
+            staffDashboard: true,
+        };
+        $scope.from = null;
+        $scope.to = null;
+
+        $scope.getDate = function (){
+            const selectedFrom = document.getElementById('selectedFrom');
+            const selectedTo = document.getElementById('selectedTo');
+            $scope.from = selectedFrom.textContent
+            $scope.to = selectedTo.textContent;
+            console.log($scope.from,$scope.to); 
+        }
+        $scope.updateDashboard = function () {
+            // Reset all dashboards to false
+            Object.keys($scope.visibleDashboards).forEach(key => {
+                $scope.visibleDashboards[key] = false;
+            });
+
+            // Set the selected dashboard to true
+            switch ($scope.feature) {
+                case "1":
+                    $scope.visibleDashboards['theorySchedule'] = true;
+                    setTimeout(()=>{
+                        drawTimelineChart("timeline", $scope.theorySheduleData, "08:00", "20:00");
+                    },200);
+                    break;
+                case "2":
+                    $scope.visibleDashboards['studentDashboard'] = true;
+                    $timeout(()=>{
+                        $scope.searchableData = $scope.students;
+                        $scope.filteredData = $scope.students;
+                        $scope.dashboardData = null;
+                    });
+                    break;
+                case "3":
+                    $scope.visibleDashboards['staffDashboard'] = true;
+                    $scope.searchableData = $scope.staffs;
+                    $scope.filteredData = $scope.staffs;
+                    break;
+            }
+        };
+
+        $scope.$watch('searchQuery', function(newVal, oldVal){
+            $scope.filteredData = $filter('filter')($scope.searchableData, $scope.searchQuery);
+                   
+        });
+
+        $scope.getStaffData = function(){
+            console.log({"staff_id": $scope.selectedStudentOrStaff,"range":{"from":$scope.from,"to":$scope.to}});
+            $http.get(`${$scope.host}/attendance/api/dashboard/get_staff_data/${$scope.selectedStudentOrStaff}/${$scope.from}/${$scope.to}`)
+            .then(function(response){
+                $scope.dashboardData = response.data;
+                $scope.totalStudents = $scope.dashboardData.batch_info.reduce((sum, item) => {return sum + item[Object.keys(item)[0]].students;}, 0);
+                $scope.totalHours = calculateStaffHours($scope.dashboardData['batch_data']);
+                console.log($scope.totalHours);
+                $scope.cumTotalHours = Object.values($scope.totalHours).reduce((sum, current) => sum + parseFloat(current), 0);
+                createTopicVisualization($scope.dashboardData,"chart1");
+                console.log($scope.dashboardData);
+                setTimeout(()=>{
+                    $scope.dashboardData.batch_info.forEach((data)=>{
+                    let id = Object.keys(data)[0];
+                    createStudentSessionChart(id,$scope.dashboardData,`chart-${id}`);
+                });
+                },200)
+                
+            });
+        }
+
+
+        $scope.getStudentData = function(){
+            // console.log({"staff_id": $scope.selectedStudentOrStaff,"range":{"from":$scope.from,"to":$scope.to}});
+            $http.get(`${$scope.host}/attendance/api/dashboard/get_student_data/${$scope.selectedStudentOrStaff}/${$scope.from}/${$scope.to}`)
+            .then(function(response){
+                $scope.dashboardData = response.data;
+                console.log($scope.dashboardData);
+            });
+        }
+
+        $scope.selectData = function(data){
+            $scope.selectedStudentOrStaff = data.id;
+            $scope.getDate();
+            console.log($scope.selectedStudentOrStaff);
+            if($scope.from && $scope.to && $scope.selectedStudentOrStaff){
+                if($scope.visibleDashboards['staffDashboard']){
+                    $scope.getStaffData();
+                }else{
+                    $scope.getStudentData();
+                }
+            }else{
+                alert("please select the starting and ending date")
+            }
+        }
+            
+        //utitlit for loading data
+        function calculateStaffHours(data) {
+            const result = {};
+            for (const batch in data) {
+                let totalHours = 0;
+                data[batch].forEach(batchItem => {
+                    batchItem.sessions.forEach(session => {
+                        const entryTime = new Date(session.entry);
+                        const exitTime = new Date(session.exit);
+                        const durationInMillis = exitTime - entryTime;
+                        const durationInHours = durationInMillis / (1000 * 60 * 60);
+                        totalHours += durationInHours;
+                    });
+                });
+
+                result[batch] = totalHours.toFixed(2);
+            }
+
+            return result;
+        }
+
+        $scope.getBatchSubject = function(batchId) {
+            const batch = $scope.dashboardData.batch_info.find((info) => info[batchId]);
+            return batch ? batch[batchId].subject : 'Unknown Subject';
+        }
+
+
+
+        //renderer function
+        function drawTimelineChart(containerId, rawData, startHour, endHour) {
+            d3.select(`#${containerId}`).selectAll("*").remove();
+
+             // Parse time
+             const parseTime = d3.timeParse("%H:%M");
+            const formatTime = d3.timeFormat("%H:%M");
+
+
+            const data = rawData.flat().map(d => ({
+                staff: d.staff,
+                start: parseTime(d.start.trim()),
+                end: parseTime(d.end.trim()),
+                strength: d.strength,
+                course: d.course,
+                topics: d.topics
+            }));
+
+            // Set dimensions dynamically
+            const margin = { top: 20, right: 30, bottom: 30, left: 60 };
+            const width = 1600 - margin.left - margin.right;
+            const rowHeight = 50; // Height per staff row
+            const height =  data.length * rowHeight; // Dynamic height based on staff count
+
+            // Create SVG
+            const svg = d3.select(`#${containerId}`)
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // Create scales
+            const xScale = d3.scaleTime()
+                .domain([parseTime(startHour), parseTime(endHour)])
+                .range([0, width]);
+
+            const yScale = d3.scaleBand()
+                .domain(data.map(d => d.staff))
+                .range([0, height])
+                .padding(0.1);
+
+            // Create axes
+            const xAxis = d3.axisBottom(xScale)
+                .ticks(d3.timeHour.every(1))
+                .tickFormat(formatTime);
+
+            const yAxis = d3.axisLeft(yScale);
+
+            // Add axes
+            svg.append("g")
+                .attr("transform", `translate(0,${height})`)
+                .call(xAxis);
+
+            svg.append("g")
+                .call(yAxis);
+
+            // Add timeline cells
+            svg.selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class", "timeline-cell")
+                .attr("x", d => xScale(d.start))
+                .attr("y", d => yScale(d.staff))
+                .attr("width", d => xScale(d.end) - xScale(d.start))
+                .attr("height", yScale.bandwidth())
+                .attr("rx", 0)
+                .attr("ry", 0)
+                .on("click", function (event, d) {
+                    console.log(d);
+                });
+
+            // Add event labels
+            svg.selectAll("text.event-label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "event-label")
+                .attr("x", d => xScale(d.start) + (xScale(d.end) - xScale(d.start)) / 2)
+                .attr("y", d => yScale(d.staff) + yScale.bandwidth() / 2)
+                .attr("dy", ".35em")
+                .text(d => `${d.course} - ${d.strength}`)
+                .style("fill", "white")
+                .style("font-size", "12px")
+                .style("text-anchor", "middle");
+        }
+    }]);
+</script>
+
+<script>
+    const filterType = document.getElementById('filterType');
+    const yearFilter = document.getElementById('yearFilter');
+    const monthFilter = document.getElementById('monthFilter');
+    const dateRangeFilter = document.getElementById('dateRangeFilter');
+    const yearInput = document.getElementById('year');
+    const monthInput = document.getElementById('month');
+    const fromDateInput = document.getElementById('fromDate');
+    const toDateInput = document.getElementById('toDate');
+    const selectedFrom = document.getElementById('selectedFrom');
+    const selectedTo = document.getElementById('selectedTo');
+    
+    
+    function updateDateRange(from, to) {
+      selectedFrom.textContent = from;
+      selectedTo.textContent = to;
+    }
+
+    yearInput.value = new Date().getFullYear();
+    updateDateRange(`${yearInput.value}-01-01`, `${yearInput.value}-12-31`)
+
+    filterType.addEventListener('change', () => {
+      const selectedFilter = filterType.value;
+
+      yearFilter.style.display = 'none';
+      monthFilter.style.display = 'none';
+      dateRangeFilter.style.display = 'none';
+
+      if (selectedFilter === 'year') {
+        yearFilter.style.display = 'block';
+      } else if (selectedFilter === 'month') {
+        monthFilter.style.display = 'block';
+      } else if (selectedFilter === 'dateRange') {
+        dateRangeFilter.style.display = 'block';
+      }
+    });
+
+    yearInput.addEventListener('change', () => {
+      const year = yearInput.value;
+      if (year) {
+        updateDateRange(`${year}-01-01`, `${year}-12-31`);
+      }
+    });
+
+    monthInput.addEventListener('change', () => {
+      const month = monthInput.value;
+      if (month) {
+        const [year, monthPart] = month.split('-');
+        const lastDay = new Date(year, monthPart, 0).getDate();
+        updateDateRange(`${month}-01`, `${month}-${lastDay}`);
+      }
+    });
+
+    fromDateInput.addEventListener('change', () => {
+      if (fromDateInput.value && toDateInput.value) {
+        updateDateRange(fromDateInput.value, toDateInput.value);
+      }
+    });
+
+    toDateInput.addEventListener('change', () => {
+      if (fromDateInput.value && toDateInput.value) {
+        updateDateRange(fromDateInput.value, toDateInput.value);
+      }
+    });
+</script>
+</div>
+{% endblock content %}

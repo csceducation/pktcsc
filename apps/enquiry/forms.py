@@ -7,6 +7,11 @@ from .models import Enquiry, Enquirylogs ,StudentEnquiryModel
 
 
 class EnquiryForm(forms.ModelForm):
+    consent = forms.BooleanField(   
+        required=False,
+        label="I Proceed to save my details",
+        error_messages={'required': 'You must provide consent to save your details while this data may re enter the database.'}
+    )
     class Meta:
         model = Enquiry
         fields = '__all__'  # Use all fields from the model
@@ -44,7 +49,7 @@ class EnquiryForm(forms.ModelForm):
         for field_name in optional_fields:
             self.fields[field_name].required = False
         # Group fields into sections
-        personal_info_fields = ['name', 'f_name','m_name','address','address1','address2','taluka', 'district','pincode', 'mobile_number', 'email','date_of_birth','student_role', 'student_company_name','gender']
+        personal_info_fields = ['name', 'f_name','m_name','address','address1','address2','taluka', 'district','pincode', 'mobile_number','alt_number', 'email','date_of_birth','student_role', 'student_company_name','gender']
         office_use_fields = ['enquiry_date','counsellor', 'counsellor_remark', 'enquiry_status','expected_date']
         qualification_fiedls = ['qualification', 'qualification_status', 'studying_year', 'studying_course','student_college_name']
         others_fields = [
@@ -64,6 +69,19 @@ class EnquiryForm(forms.ModelForm):
         # Convert fieldsets to a dictionary for use in templates
         return {key: [self[field] for field in fields] for key, fields in self.fieldsets.items()}
 
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        phone_number = cleaned_data.get('mobile_number')
+        consent = cleaned_data.get('consent')
+        if Enquiry.objects.filter(name=name, mobile_number=phone_number).exists():
+            if not consent:
+                self.add_error('name', 'This name and phone number combination already exists.')
+                    # Add an error to the `phone_number` field
+                self.add_error('mobile_number', 'This name and phone number combination already exists.')
+            
+        return cleaned_data
+    
 
  # Use all fields from the model
 class LogForm(forms.ModelForm):
@@ -108,7 +126,7 @@ class StudentEnquiryForm(forms.ModelForm):
         for field_name in optional_fields:
             self.fields[field_name].required = False
         # Group fields into sections
-        personal_info_fields = ['name', 'f_name','m_name','address','address1','address2','taluka', 'district','pincode', 'mobile_number', 'email','date_of_birth','student_role', 'student_company_name','gender']
+        personal_info_fields = ['name', 'f_name','m_name','address','address1','address2','taluka', 'district','pincode', 'mobile_number','alternate_mobile_number', 'email','date_of_birth','student_role', 'student_company_name','gender']
         qualification_fiedls = ['qualification', 'qualification_status', 'studying_year', 'studying_course','student_college_name']
         others_fields = [
             

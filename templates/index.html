@@ -6,35 +6,63 @@
 {% endblock scriptORstyle %}
 
 {% block content %}
-
-
-
-
       <!-- Pending Requests Card Example -->
 
       <!--for dashboard-->
       {% if request.user.is_superuser %}
       <div class="container mt-5">
         <div class="card">
-          <div class="card-header bg-primary text-white">
+          <div class="card-header  d-flex flex-row justify-content-between">
             <h2>Dashboard</h2>
+            <a class="btn btn-primary" href="{% url "detailed_dashboard" %}">Detailed Insights</a>
           </div>
           <div class="card-body">
-            <form method="GET" class="form-inline mb-4">
-              <div class="form-group mb-2">
-                <label for="start_date" class="mr-2">Start Date</label>
-                <input type="date" name="start_date" class="form-control">
-              </div>
-              <div class="form-group mx-sm-3 mb-2">
-                <label for="end_date" class="mr-2">End Date</label>
-                <input type="date" name="end_date" class="form-control">
-              </div>
-              <button type="submit" class="btn btn-primary mb-2">Submit</button>
-            </form>
+            <div class="formfield">
+                <div class="card mb-4">
+                <div class="card-header">
+                  <h4>Analyze Data</h4>
+                </div>
+                <div class="card-body">
+                  <form method="GET" class="form-inline">
+                  <div class="form-group mx-sm-3 mb-2">
+                    <label for="opti" class="mr-2">Analyze Via</label>
+                    <select name="opti" id="opti" class="form-control">
+                    <option value="date" selected>Date</option>
+                    <option value="scheme">Scheme</option>
+                    </select>
+                  </div>
+                  <div class="dateform mx-3">
+                    <div class="form-group mx-sm-3 mb-2">
+                    <label for="start_date" class="mr-2">Start Date</label>
+                    <input type="date" name="start_date" class="form-control">
+                    </div>
+                    <div class="form-group mx-sm-3 mb-2">
+                    <label for="end_date" class="mr-2">End Date</label>
+                    <input type="date" name="end_date" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary mx-sm-3 mb-2" >Submit</button>
+                  </div>
+                  <div class="schemeform" style="display: none;">
+                    <div class="form-group mx-sm-3 mb-2">
+                    <label for="scheme" class="mx-sm-3 mb-2">Scheme</label>
+                    <select name="scheme" id="scheme" class="form-control">
+                      <option value="">-----------</option>
+                      {% for scheme in schemes %}
+                      <option value="{{ scheme.id }}">{{ scheme.name }}</option>
+                      {% endfor %}
+                    </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary mx-sm-3 mb-2">Submit</button>
+                  </div>
+                  </form>
+                </div>
+                </div>
       
             {% if dashboard %}
+            <h3>Analysis by {{ via }} wise from {{ start_date }} to {{ end_date }}</h3>
             <div class="row mb-4">
               <div class="col-md-4 mb-3">
+               
                 <!-- Card for Total Admissions -->
                 <div class="card">
                   <div class="card-body">
@@ -157,7 +185,8 @@
             ['{{ course.course__course_name }}', {{ course.admission_count }}],
             {% endfor %}
           ]);
-      
+         
+           
           const courseOptions = {
             title: 'Course-wise Admissions',
             pieHole: 0.4,
@@ -208,6 +237,16 @@
       
           const batchChart = new google.visualization.PieChart(document.getElementById('batchPieChart'));
           batchChart.draw(batchData, batchOptions);
+        });
+
+        $('#opti').change(function(){
+          if($(this).val() == 'date'){
+            $('.dateform').show();
+            $('.schemeform').hide();
+          }else{
+            $('.dateform').hide();
+            $('.schemeform').show();
+          }
         });
       </script>
   </div>

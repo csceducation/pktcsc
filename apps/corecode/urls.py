@@ -38,6 +38,20 @@ from .views import (
     BillUpdateView,
     save_gst_percent,
     save_gst_number,
+    AccountHeadingCreateView,
+    AccountHeadingDeleteView,
+    AccountHeadingListView,
+    AccountHeadingUpdateView,
+    SchemeListView,
+    SchemeCreateView,
+    SchemeDeleteView,
+    SchemeUpdateView,
+    create_opening_balance,
+    InventoryCreateView,
+    InventoryListView,
+    InventoryUpdateView,
+    InventoryDeleteView,
+    dashboard
 )
 
 urlpatterns = [
@@ -58,6 +72,10 @@ urlpatterns = [
         SessionDeleteView.as_view(),
         name="session-delete",
     ),
+    path("account-heading/list/", AccountHeadingListView.as_view(), name="account-headings"),
+    path("account-heading/create/", AccountHeadingCreateView.as_view(), name="account-heading-create"),
+    path("account-heading/<int:pk>/update/", AccountHeadingUpdateView.as_view(), name="account-heading-update"),
+    path("account-heading/<int:pk>/delete/", AccountHeadingDeleteView.as_view(), name="account-heading-delete"),
     path("term/list/", TermListView.as_view(), name="terms"),
     path("term/create/", TermCreateView.as_view(), name="term-create"),
     path("term/<int:pk>/update/", TermUpdateView.as_view(), name="term-update"),
@@ -90,6 +108,18 @@ urlpatterns = [
         BookDeleteView.as_view(),
         name="bookdelete",
     ),
+    path("scheme/list/", SchemeListView.as_view(), name="scheme"),
+    path("scheme/create/", SchemeCreateView.as_view(), name="scheme-create"),
+    path(
+        "scheme<int:pk>/update/",
+        SchemeUpdateView.as_view(),
+        name="scheme-update",
+    ),
+    path(
+        "scheme/<int:pk>/delete/",
+        SchemeDeleteView.as_view(),
+        name="schemedelete",
+    ),
     path("exam/list/", ExamListView.as_view(), name="exam"),
     path("exam/create/", ExamCreateView.as_view(), name="exam-create"),
     path(
@@ -118,5 +148,11 @@ urlpatterns = [
     path('bill/', BillDetailView.as_view(), name='bill-detail'),
     path('bill/edit/', BillUpdateView.as_view(), name='bill-update'),
     path('modify_gst',save_gst_percent,name='save_gst'),
-    path('modify_gst_number',save_gst_number,name='save_gst_number')
+    path('modify_gst_number',save_gst_number,name='save_gst_number'),
+    path('update_opening_balance',create_opening_balance,name='update_opening_balance'),
+    path('inventory/list',InventoryListView.as_view(),name='inventory-list'),
+    path('inventory/create',InventoryCreateView.as_view(),name='inventory-create'),
+    path('inventory/update/<int:pk>',InventoryUpdateView.as_view(),name='inventory-update'),
+    path('inventory/delete/<int:pk>',InventoryDeleteView.as_view(),name='inventory-delete'),
+    path('v2/dashboard',dashboard,name='detailed_dashboard')
 ]

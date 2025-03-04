@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content-header %}
+<div class="card-header">
+  <div class="card-tools">
+    <a href="{% url 'break_details_update' object.id%}" class="btn btn-tool">
+      <i class="fas fa-edit"></i>
+    </a>
+    <a href="{% url 'break_details_delete' object.id%}" class="btn btn-tool">
+      <i class="fas fa-times"></i>
+    </a>
+  </div>
+</div>
+{% endblock content-header %}
+
+{% block content %}
+    <div class="row mb-4">
+      <div class="col-sm-4">
+        <div class="row mb-2">
+          <div class="float-right">
+            <h4>Break Details of </h4>
+            <h4>{{ object.student.student_name }} </h4>
+            <h4>{% if object.is_joined %}
+                Joined
+            {% else %}
+                Not joined yet
+            {% endif %}</h4>
+          </div>
+        </div>
+        
+      </div>
+      <div class="col-sm-8">
+        <div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Break Start Date
+            </label>
+            <div class="col">
+              {{ object.break_start }}
+            </div>
+          </div>
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Break Expected End Date
+            </label>
+            <div class="col">
+              {{ object.break_end }}
+            </div>
+          </div>
+          {% if object.reason %}
+          <div class="form-group border-bottom row">
+            <label class="col">
+              Break Reason
+            </label>
+            <div class="col">
+              {{ object.reason }}
+            </div>
+          </div>
+          {% endif %}
+          </div>
+
+        </div>
+      </div>
+    </div>
+</div>
+<hr>
+<div>
+    <div class="row">
+
+        <div class="col">
+            <h2>Followups</h2>
+        </div>
+        <div class="col">
+            <a href="{% url 'add_followup' object.id %}" class="btn btn-primary">add followup</a> 
+        </div>
+        <!-- add the classes and style and implent
+            1.followup addition view and delete using here (forloop.counter for index splicing)
+            2.create updates (with joined field in the form so that we can end the process) and delete views of the model 
+        -->
+    </div>
+    <div class="container mt-5">
+      <h2 class="mb-4">Follow-Up Details</h2>
+      {% if object.followup|length > 0 %}
+      <table class="table table-bordered table-hover">
+          <thead class="table-light">
+              <tr>
+                  <th>Staff ID</th>
+                  <th>Date</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+              </tr>
+          </thead>
+          <tbody>
+              {% for fp in object.followup %}
+                  <tr>
+                      <td>
+                          {{ fp.staff.id }}
+                          {{ fp.staff.name }}
+                          
+                      </td>
+                      
+                      <td>{{ fp.date }}</td>
+                      <td>{{ fp.notes }}</td>
+                      <td class="text-center">
+                          <!-- Delete Icon -->
+                          <a href="{% url 'delete_followup' object.id forloop.counter %}" class="btn btn-danger btn-sm" title="Delete">
+                              <i class="fas fa-trash"></i>
+                          </a>
+                      </td>
+                  </tr>
+              {% endfor %}
+          </tbody>
+      </table>
+      {% else %}
+      <h4>No follow ups were made</h4>
+      {% endif %}
+  </div>
+  
+  
+</div>
+
+{% endblock content %}

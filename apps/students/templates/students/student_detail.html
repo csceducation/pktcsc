@@ -42,6 +42,10 @@
         </div>
         <h5><a href="{% url 'details_course' object.course.id%}">{{ object.course }}</a> </h5>
         <h5>{{ object.get_gender_display }} | {{ object.get_current_status_display }}</h5>
+        <h5> {{object.scheme}}</h5>
+        {% if object.if_enq.counsellor %}
+        <h5>Followed By : <a href="{% url 'staff-detail' object.if_enq.counsellor.id%}">{{object.if_enq.counsellor}}</a></h5>
+        {% endif %}
 
       </div>
       <div class="col-sm-8">
@@ -178,10 +182,51 @@
 
 
 {% comment %} ---------------------------------------------------------------------------- {% endcomment %}
+<!-- {{batches}} -->
+ <div class="row m-2 my-4">
+  <div class="col-4">
+    <h4>Batch Enrolled </h4>
+  </div>
+  <div  class="col">
+    <p class="text-info">click a batch to view the student attendance</p>  
+  </div>
+</div>
 
+<div class="table-responsive">
+  <table class="table table-bordered table-hover">
+    <thead class="thead-light">
+      <tr>
+        <th>S/N</th>
+        <th>Batch Id</th>
+        <th>Batch status</th>
+        <th>Batch started On</th>
+        <th>Batch course</th>
+        <th>Batch Staff</th>
+        <th>Batch Timing</th>
+        <th>Total Student</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      {% for batch in batches %}
+        <tr class='clickable-row' data-href="{% url 'public_student_profile_attendance' object.id %}#{{batch.batch_id}}">
+          <td>{{ forloop.counter}}</td>
+          <td>{{ batch.batch_id}}</td>
+          <td>{{ batch.batch_status}}</td>
+          <td>{{ batch.batch_start_date}}</td>
+          <td>{{ batch.batch_course}}</td>
+          <td>{{ batch.batch_staff}}</td>
+          <td>{{ batch.batch_timing}}</td>
+          <td>{{ batch.total_student}}</td>
+        </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+</div>
 <h4>Class Details</h4>
 {% if classlog %}
-  <table class="table table-sm table-bordered table-hover">
+  <table id="studentBatchtable" class="table table-sm table-bordered table-hover">
     <thead class="thead-light">
       <tr>
         <th>Subject</th>
@@ -314,7 +359,10 @@
         <p>There are no payment history for {{object}}</p>
     {% endif %}
 
-
+    <script>
+      $('#studentBatchtable').DataTable({
+      });
+    </script>
 
 
 {% endblock content %}

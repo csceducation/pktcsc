@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>custom dialog</title>
+    <style>
+        /* Custom Confirm Dialog */
+  .custom-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .custom-confirm.hidden {
+    display: none;
+  }
+
+  .custom-confirm-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+  }
+
+  .custom-confirm-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .custom-confirm-message {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .custom-confirm-actions {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .custom-confirm-actions .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .custom-confirm-actions .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .custom-confirm-actions .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  .custom-confirm-actions .btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  .custom-confirm-actions .btn-secondary:hover {
+    background-color: #565e64;
+  }
+    </style>
+</head>
+<body>
+
+    <!-- custom delete confirmation  -->
+  <div id="custom-confirm" class="custom-confirm hidden">
+    <div class="custom-confirm-box">
+      <h4 class="custom-confirm-title">Are you sure?</h4>
+      <p class="custom-confirm-message">
+        Do you really want to perform this action?
+      </p>
+      <div class="custom-confirm-actions">
+        <button id="confirm-yes" class="btn btn-primary">Yes</button>
+        <button id="confirm-no" class="btn btn-secondary">No</button>
+      </div>
+    </div>
+  </div>
+
+
+    <script>
+        function showCustomConfirm(message, callback) {
+          const confirmDialog = document.getElementById('custom-confirm');
+          const confirmMessage = confirmDialog.querySelector('.custom-confirm-message');
+          const yesButton = document.getElementById('confirm-yes');
+          const noButton = document.getElementById('confirm-no');
+
+          // Set message
+          confirmMessage.textContent = message;
+
+          // Show dialog
+          confirmDialog.classList.remove('hidden');
+
+          // Handle Yes button
+          yesButton.onclick = () => {
+            confirmDialog.classList.add('hidden');
+            callback(true); // Execute callback with `true`
+          };
+
+          // Handle No button
+          noButton.onclick = () => {
+            confirmDialog.classList.add('hidden');
+            callback(false); // Execute callback with `false`
+          };
+        }
+
+        showCustomConfirm('Message', (result) => {
+          if (result) {
+            console.log('Session deleted');
+          } else {
+            console.log('Action cancelled');
+          }
+        });
+    </script>
+</body>
+</html>

@@ -81,6 +81,10 @@ def save_bill_details(request):
         except Staff.DoesNotExist:
             messages.error(request, 'Error: Staff ID not found.')
             return redirect('bill')
+        if Receipt.objects.filter(Bill_No=bill_number).exists():
+            messages.error(request, 'Error: Bill number already exists.')
+            return redirect('bill')
+
         print("due date from view: ",next_due)
         invoice = Invoice.objects.get(student=student)
         if due is None:
@@ -212,7 +216,9 @@ def get_student_dues(request, student_id):
 
 def dues_list(request):
     if request.method == "POST":
-        dues = Due.objects.filter(invoice__student__student_name__icontains = request.POST.get("student_name"))
+        dues = Due.objects.filter(
+            invoice__student__enrol_no__icontains=request.POST.get("enrol_no")
+        )
         return render(request,"finance/dues.html",{"dues":dues})
     dues = Due.objects.all()
     return render(request,"finance/dues.html",{"dues":dues})

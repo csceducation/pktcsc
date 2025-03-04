@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Students Breakage List{% endblock title %}
+
+{% block breadcrumb %}
+<a href="{% url 'break_details_create' %}" style="font-size: 0.8rem;" class="btn btn-primary">Add Entry</a>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>S/N</th>
+          <th>Fullname</th>
+          <th>Registration Number</th>
+          <th>Current Class</th>
+          <th>Break Start Date</th>
+          <th>Break End Date</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for obj in objects %}
+          <tr class='clickable-row' data-href="{% url 'break_details_details' obj.id %}">
+            <td>{{ forloop.counter}}</td>
+            <td>{{ obj.student.student_name}}</td>
+            <td>{{ obj.student.enrol_no}}</td>
+            <td>{{ obj.student.course}}</td>
+            <td>{{ obj.break_start}}</td>
+            <td>{{ obj.break_end }}</td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}
+
+
+{% block morejs %}
+<script>
+  $('#studenttable').DataTable({
+  });
+</script>
+
+{% endblock morejs %}

@@ -3,6 +3,16 @@
 
 {% block content  %}
 <h3>Exam Logs</h3>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+
 <form action="" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
 {% for field in form %}
@@ -21,6 +31,49 @@
   </div>
 </div>
 {% endfor %}
-<input type="submit" class="btn btn-primary" value="Add Log">
+<input type="submit" class="btn btn-primary" value="Submit" id="submitBtn">
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  var subject = document.getElementById("id_subject");
+  if (subject) {
+      let theoryMax, practicalMax;
+      let examData = {{ exams | safe }};
+
+      subject.addEventListener('change', () => {
+          let sub = examData.filter(s => Number(s.sub) === Number(subject.value));
+          if (sub.length > 0) {
+              theoryMax = sub[0].theory;
+              practicalMax = sub[0].practical;
+              // console.log(theoryMax, practicalMax);
+          }
+      });
+
+      var theory = document.getElementById('id_theory_mark');
+      var practical = document.getElementById('id_paratical_mark');
+      var submitBtn = document.getElementById('submitBtn');
+
+      if (theory && practical && submitBtn) {
+          theory.addEventListener('input', () => {
+              if (Number(theory.value) > theoryMax) {
+                  submitBtn.disabled = true;
+                  alert('Theory marks exceed maximum allowed!');
+              } else {
+                  submitBtn.disabled = false;
+              }
+          });
+
+          practical.addEventListener('input', () => {
+              if (Number(practical.value) > practicalMax) {
+                  submitBtn.disabled = true;
+                  alert('Practical marks exceed maximum allowed!');
+              } else {
+                  submitBtn.disabled = false;
+              }
+          });
+      }
+  }
+});
+</script>
 {% endblock content%}

@@ -8,6 +8,7 @@ from .views import (
     StudentDeleteView,
     StudentDetailView,
     StudentListView,
+    StudentInActiveListView,
     StudentUpdateView,
     select_enquiry,
     CreateBooklLog,
@@ -20,6 +21,15 @@ from .views import (
     CreateCertificateLog,
     PublicView,
     generate_student_id_card,
+    BreakDetailsCreateView,
+    BreakDetailsUpdateView,
+    BreakDetailsDeleteView,
+    BreakDetailsInActiveListView,
+    StudentInActiveListView,
+    BreakDetailsDetails,
+    add_followup,
+    delete_followup,
+    
     
 )
 
@@ -28,6 +38,7 @@ urlpatterns = [
     path("",Studentdashboard,name="dashboard"),
     path('select_enquiry/', select_enquiry, name='select_enquiry'),
     path("list", StudentListView.slist, name="student-list"),
+    path("inactive", StudentInActiveListView.slist, name="student-inactive-list"),
     path("<int:pk>/", StudentDetailView.as_view(), name="student-detail"),
     path("create/<int:enquiry_id>/", StudentCreateView.as_view(), name="student-create"),
     path("<int:pk>/update/", StudentUpdateView.as_view(), name="student-update"),
@@ -42,5 +53,11 @@ urlpatterns = [
     path("examdel/<int:pk>/", delete_exam_log, name="exam-delete"),
     path("<int:pk>/certificatelog/",CreateCertificateLog.as_view(),name="certificatelog"),
     path("certificatedel/<int:pk>/", delete_certificate_log, name="certificate-delete"),
-    
+    path("break_details/list",BreakDetailsInActiveListView.slist,name="break_details"),
+    path("break_details/create",BreakDetailsCreateView.as_view(),name="break_details_create"),
+    path("break_details/update/<int:pk>/",BreakDetailsUpdateView.as_view(),name="break_details_update"),
+    path("break_details/delete/<int:pk>/",BreakDetailsDeleteView.as_view(),name="break_details_delete"),
+    path("break_details/details/<int:pk>/",BreakDetailsDetails,name="break_details_details"),
+    path("break_details/add_followup/<int:pk>/",add_followup,name="add_followup"),
+    path("break_details/delet_followup/<int:pk>/<int:index>/",delete_followup,name="delete_followup"),
 ]

@@ -101,7 +101,7 @@ class InvoiceItem(models.Model):
 
 class Receipt(models.Model):
     
-    Bill_No = models.CharField(max_length=245, default=None)
+    Bill_No = models.CharField(max_length=245 , default=None)#unique=True
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     amount_paid = models.IntegerField()
     date_paid = models.DateField(default=timezone.now)

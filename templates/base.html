@@ -28,7 +28,7 @@
         }
   </style>
   {% block scriptORstyle %}{% endblock scriptORstyle %}
-  <title>Pudukkottai   CSC</title>
+  <title>{{company}}   CSC</title>
   <link rel="icon" href="https://content.jdmagicbox.com/comp/krishnagiri/d9/9999p4343.4343.160817161634.c1d9/catalogue/csc-computer-education-krishnagiri-ho-krishnagiri-computer-training-institutes-mmcytnevnv-250.jpg">
 
   <!-- Font Awesome Icons -->
@@ -62,9 +62,6 @@
         </li>
         <li class="nav-item d-none d-sm-inline-block">
           <a  class="nav-link">Branch: {{ current_session }}</a>
-        </li>
-        <li class="nav-item d-none d-sm-inline-block">
-          <a  class="nav-link">Year: {{ current_term }}</a>
         </li>
         {% if request.user.is_superuser %}
           <li class="nav-item d-none d-sm-inline-block">
@@ -100,9 +97,13 @@
                     <a href="{% url 'staff-detail' pk=request.user.staff_profile.id %}" class="dropdown-item">
                         <i class="fas fa-user mr-2"></i> Profile
                     </a>
-                {% else %}
+                {% elif request.user %}
                     <a href="{% url 'public_student_profile' pk=request.user.student_profile.id %}" class="dropdown-item">
                         <i class="fas fa-user mr-2"></i> Profile
+                    </a>
+                {% else %}
+                    <a href="#" class="dropdown-item">
+                      <i class="fas fa-user mr-2"></i> Profile
                     </a>
                 {% endif %}
                 <div class="dropdown-divider"></div>
@@ -116,7 +117,7 @@
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-      <a href="{% url 'home' %}" class="brand-link"> Pudukkottai   CSC </a>
+      <a href="{% url 'home' %}" class="brand-link"> {{company}}   CSC </a>
       {% if request.user.is_superuser %}
         <!-- Sidebar -->
         <div class="sidebar">
@@ -170,11 +171,35 @@
                   </p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="{% url 'lab_attendance_form' %}" class="nav-link">
+                  <i class="fa fa-hourglass-start fa-lg" aria-hidden="true"></i>
+                  <p>
+                    &nbsp;Lab
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'daily-activity' %}" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>
+                  Today's
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'break_details' %}" class="nav-link">
+                  <i class="nav-icon fas fa-pause"></i>
+                  <p>
+                  Break Details
+                  </p>
+                </a>
+              </li>
               
               
 
 
-              <li class="nav-header">Finance</li>
+              <li class="nav-header">Bill</li>
               <li class="nav-item">
                 <a href="{% url 'bill' %}" class="nav-link">
                   <i class="nav-icon fas fa-money-bill-alt"></i>
@@ -188,6 +213,24 @@
                   <i class="nav-icon fas fa-calendar-check"></i>
                   <p>
                     Due Bills
+                  </p>
+                </a>
+              </li>
+
+              <li class="nav-header">Accounts</li>
+              <li class="nav-item">
+                <a href="{% url 'day-statement' %}" class="nav-link">
+                  <i class="nav-icon fas fa-money-bill-alt"></i>
+                  <p>
+                    Day Statement
+                  </p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'collective-view' %}" class="nav-link">
+                  <i class="nav-icon fas fa-money-bill-alt"></i>
+                  <p>
+                    Month Statement
                   </p>
                 </a>
               </li>
@@ -210,6 +253,14 @@
                   </p>
                 </a>
                 <ul class="nav nav-treeview">
+                  <li class="nav-item">
+                    <a href="{% url 'scheme' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Schemes
+                      </p>
+                    </a>
+                  </li>
                   <li class="nav-item">
                     <a href="{% url 'subjects' %}" class="nav-link">
                       <i class="nav-icon fas fa-bars"></i>
@@ -247,6 +298,22 @@
                       <i class="nav-icon fas fa-bars"></i>
                       <p>
                         Bill - utility
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'account-headings' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Account Headings
+                      </p>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a href="{% url 'inventory-list' %}" class="nav-link">
+                      <i class="nav-icon fas fa-bars"></i>
+                      <p>
+                        Inventory
                       </p>
                     </a>
                   </li>

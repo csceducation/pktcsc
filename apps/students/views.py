@@ -18,6 +18,7 @@ from django.views.generic import DetailView, ListView, View
 from django.views.generic.edit import FormMixin, CreateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.contrib import messages
 from django.views.generic.edit import (
     CreateView,
     DeleteView,
@@ -32,17 +33,20 @@ from ..finance.models import Invoice,InvoiceItem
 from django.views.generic import DetailView
 from apps.finance.models import Invoice,Due
 from ..enquiry.models import *
-from .models import Student, StudentBulkUpload,Bookmodel,Classmodel,Exammodel,Certificatemodel
+from .models import Student, StudentBulkUpload,Bookmodel,Classmodel,Exammodel,Certificatemodel,BreakDetails
 from django.utils.decorators import method_decorator
 from apps.corecode.views import student_entry_resricted,staff_student_entry_restricted,different_user_restricted
 from django.contrib.auth.decorators import login_required
 from apps.batch.models import BatchModel
-from apps.attendancev2.dashboard import DashboardManager
-from apps.attendancev2.manager import AttendanceManager
+# from apps.attendancev2.dashboard import DashboardManager
+# from apps.attendancev2.manager import AttendanceManager
+from apps.attendancev2.analaytics import AnalyticManager
 from django.core.serializers import serialize
 from csc_app.settings import db
-from apps.corecode.models import User
-
+from apps.corecode.models import User,Schemes,Exam,Book,Subject
+from apps.corecode.utils import debug_info
+from apps.course.models import CourseBookModel,CourseExamModel,CourseSubjectModel # related the subject model with Student Exam Model (should bee exam model not the subject)
+from csc_app.context_processor import company as comp
 def generate_student_id_card(request,student_id):
         # Create a blank image
     image = Image.new('RGB', (1000, 900), (255, 255, 255))
@@ -69,7 +73,7 @@ def generate_student_id_card(request,student_id):
     logo = Image.open(logo_path)
     logo = logo.resize((150, 120))  # Resize the logo as needed
     image.paste(logo, (100, 25))  # Paste the logo at the desired location
-    company = "Pudukkottai   CSC"
+    company = f"{comp}   CSC"
     color = 'rgb(0, 0, 0)' # black color
     draw.text((x, y), company, fill=text_color, font=font)
 
@@ -145,7 +149,8 @@ def generate_student_id_card(request,student_id):
     with open(image_path, 'rb') as file:
         response = HttpResponse(file.read(), content_type='image/png')
         response['Content-Disposition'] = 'attachment; filename=student_id_card.png'
-    return response
+    return 
+
 def handler404(request, exception):
     return render(request, '404.html', status=404)
 
@@ -155,7 +160,15 @@ class StudentListView(LoginRequiredMixin, ListView):
     
     def slist(request):
         template_name = "students/student_list.html"
-        return render(request, template_name , context={"students":Student.objects.all()})
+        return render(request, template_name , context={"students":Student.objects.filter(current_status="active")})
+
+@method_decorator(student_entry_resricted(),name='dispatch')
+class StudentInActiveListView(LoginRequiredMixin, ListView):
+    model = Student
+    
+    def slist(request):
+        template_name = "students/student_list_inactive.html"
+        return render(request, template_name , context={"students":Student.objects.filter(current_status="inactive")})
 
 def select_enquiry(request):
     enquiries = Enquiry.objects.filter(enquiry_status = "Following")
@@ -181,6 +194,7 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
         context["examlog"] = Exammodel.objects.filter(student=self.object)
         context["certilog"] = Certificatemodel.objects.filter(student=self.object)
         context['dues'] = Due.objects.all()
+        context['batches'] = BatchModel.objects.filter(batch_students__id=self.object.id)
         return context
 
 @method_decorator(student_entry_resricted(),name='dispatch')
@@ -210,13 +224,14 @@ class StudentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
         # Create a dynamic ModelForm for the Student model
         class StudentForm(forms.ModelForm):
-            
             class Meta:
                 model = Student
                 fields = '__all__'
-                def __init__(self, *args, **kwargs):
-                    super().__init__(*args, **kwargs)
-                    # Make the 'enquiry_id' field readonly
+            
+            def __init__(self, *args, **kwargs):
+                super().__init__(*args, **kwargs)
+                # Make the 'enquiry_id' field readonly
+                self.fields['scheme'].queryset = Schemes.objects.filter(scheme_status='Active')
                     
            
                                 
@@ -259,13 +274,13 @@ class StudentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
                 form.initial['gender'] = enquiry_instance.gender
                 form.initial['occupation'] = enquiry_instance.student_role
                 form.initial['mobile_number'] = enquiry_instance.mobile_number
+                form.initial['alt_number'] = enquiry_instance.alt_number
                 form.initial['email'] = enquiry_instance.email
                 form.initial['taluka'] = enquiry_instance.taluka
                 form.initial['district'] = enquiry_instance.district
                 form.initial['pincode'] = enquiry_instance.pincode
                 form.initial['course'] = enquiry_instance.course_to_join
                 form.initial['class_time'] = [t.id for t in enquiry_instance.time_to_study.all()]
-                
 
         except Enquiry.DoesNotExist:
             raise Http404("Enquiry does not exist")
@@ -276,7 +291,6 @@ class StudentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         del form.fields['user']
-        
         # Retrieve the enquiry_id from the URL parameters
         # Add date pickers and customize widgets
         form.fields["date_of_birth"].widget = widgets.DateInput(attrs={"type": "date"})
@@ -296,6 +310,11 @@ class StudentCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
                 class Meta:
                     model = Student
                     fields = '__all__'
+
+                def __init__(self, *args, **kwargs):
+                    super().__init__(*args, **kwargs)
+                    # Make the 'enquiry_id' field readonly
+                    self.fields['scheme'].queryset = Schemes.objects.filter(scheme_status='Active')
                     
                 def clean_username(self):
                     username = self.cleaned_data.get('username')
@@ -424,7 +443,14 @@ class CreateBooklLog(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             form.fields['student'].widget = forms.HiddenInput()
             form.fields['student'].label = ""
             form.fields["received_date"].widget = widgets.DateInput(attrs={"type": "date"})
-            
+            book_queryset = CourseBookModel.objects.filter(course=Student.objects.get(id=kwargs['pk']).course)
+            book_set = set()
+            for course_book in book_queryset:
+                if course_book.book_name.exists():
+                    book_set.update(course_book.book_name.all())
+
+            # Convert the set to a list and assign it to the form field
+            form.fields['received_book'].queryset = Book.objects.filter(id__in=[book.id for book in book_set])
         return render(request, 'books/add_logs.html', {'form': form})
     def post(self, request, *args, **kwargs):
 
@@ -433,6 +459,8 @@ class CreateBooklLog(LoginRequiredMixin, SuccessMessageMixin, CreateView):
                 class Meta:
                     model = Bookmodel
                     fields = '__all__'
+                    
+                    
 
             form = BookForm(request.POST)
             
@@ -534,8 +562,26 @@ class CreateExamLog(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             form.fields['student'].widget = forms.HiddenInput()
             form.fields['student'].label = ""
             form.fields["exam_date"].widget = widgets.DateInput(attrs={"type": "date"})
-            
-        return render(request, 'classes/exam.html', {'form': form})
+            exam_querysets = CourseSubjectModel.objects.filter(course=Student.objects.get(id=kwargs['pk']).course)
+            exam_set = set()
+            for course_sub in exam_querysets:
+                if course_sub.sub_name.exists():
+                    exam_set.update(course_sub.sub_name.all())
+
+            # Convert the set to a list and assign it to the form field
+            form.fields['subject'].queryset = Subject.objects.filter(id__in=[sub.id for sub in exam_set])
+        # subject_data = {}
+        exams = Exam.objects.all()
+        if not all([exam.subject for exam in exams]):
+            messages.error(request, "please Fill up the Subject Field for every Exam and Try again")
+            return redirect('exam')
+        exam_data = [{"sub":exam.subject.id,"theory":exam.max_theory_marks,"practical":exam.max_practical_marks} for exam in exams]
+        
+        data = {
+            "form":form,
+            "exams":exam_data
+        }
+        return render(request, 'classes/exam.html',data)
     def post(self, request, *args, **kwargs):
 
            
@@ -563,7 +609,7 @@ class CreateCertificateLog(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         class CertificateForm(forms.ModelForm):
                 class Meta:
                     model = Certificatemodel
-                    fields = '__all__'
+                    exclude = ['course']
         form = CertificateForm()
         if "pk" in kwargs:
             form.initial['student'] = kwargs['pk']
@@ -580,7 +626,7 @@ class CreateCertificateLog(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             class CertificateForm(forms.ModelForm):
                 class Meta:
                     model = Certificatemodel
-                    fields = '__all__'
+                    exclude = ['course']
 
             form = CertificateForm(request.POST)
             
@@ -634,17 +680,119 @@ class PublicView(PublicAccessMixin,DetailView):
     
     
 def attendance_test(request,**kwargs):
+    data = {}
     student_id = kwargs.get('pk')
     student = Student.objects.get(id=student_id)
-    batches = BatchModel.objects.filter(batch_students__id=student.id)
-    manager = DashboardManager(db)
-    lab_manager = AttendanceManager(db)
-    lab_data = lab_manager.get_public_student_lab_data(student.enrol_no)
-    data = {}
-    for batch in batches:
-        x = manager.get_public_attendance(student.enrol_no,batch.id)
-        x.append(batch.batch_staff.username)
-        data[str(batch.batch_course)+"("+str(batch.batch_id)+")"] = x
-    #print(data)
+    manager = AnalyticManager()
+    data = manager.get_student_batch_data(student.enrol_no)
+    final = []
+    for doc in data:
+        print(doc['_id'])
+        if BatchModel.objects.filter(id=doc['_id']).exists():
+            doc['batch'] = BatchModel.objects.get(id=doc['_id'])
+            for session in doc['sessions']:
+                session['staff'] = Staff.objects.get(id=session['staff'])
+            final.append(doc)
+    # batches = BatchModel.objects.filter(batch_students__id=student.id)
+    # manager = DashboardManager(db)
+    # lab_manager = AttendanceManager(db)
+    # lab_data = lab_manager.get_public_student_lab_data(student.enrol_no)
+    # data = {}
+    # for batch in batches:
+    #     x = manager.get_public_attendance(student.enrol_no,batch.id)
+    #     x.append(batch.batch_staff.username)
+    #     data[str(batch.batch_course)+"("+str(batch.batch_id)+")"] = x
+    # #print(data)
     
-    return render(request, 'public/student_attendance.html', {'data':data,'object':student,"lab_data":lab_data})
+    return render(request, 'public/student_attendance.html', {'data':final,'object':student})
+
+
+class BreakDetailsInActiveListView(LoginRequiredMixin, ListView):
+    model = BreakDetails
+    
+    def slist(request):
+        template_name = "students/break_details_list.html"
+        objects = BreakDetails.objects.filter(is_joined=False)
+        debug_info(objects)
+        return render(request, template_name , context={"objects":objects})
+
+
+class BreakDetailsForm(forms.ModelForm):
+    class Meta:
+        model = BreakDetails
+        fields = ["student", "break_start", "break_end", "reason"]
+        widgets = {
+            'break_start': forms.DateInput(attrs={'type': 'date'}),
+            'break_end': forms.DateInput(attrs={'type': 'date'}),
+        }
+class BreakDetailsFormUpdate(forms.ModelForm):
+    YES_NO_CHOICES = [
+        (True, 'Yes'),
+        (False, 'No'),
+    ]
+    
+    is_joined = forms.ChoiceField(
+        choices=YES_NO_CHOICES, 
+        widget=forms.RadioSelect,  # You can also use Select if you prefer a dropdown
+        label="Is Joined?"
+    )
+    class Meta:
+        model = BreakDetails
+        fields = ["student", "break_start", "break_end", "is_joined","reason"]
+        widgets = {
+            'break_start': forms.DateInput(attrs={'type': 'date'}),
+            'break_end': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+class BreakDetailsCreateView(LoginRequiredMixin, CreateView):
+    model = BreakDetails
+    success_url = "list"
+    form_class = BreakDetailsForm
+    
+def BreakDetailsDetails(request,pk):
+    obj = BreakDetails.objects.get(id=pk)
+    
+    return render(request,'students/breakdetails-details.html',{"object":obj})
+    
+class BreakDetailsUpdateView(LoginRequiredMixin, UpdateView):
+    model = BreakDetails
+    form_class = BreakDetailsFormUpdate
+    
+    def get_success_url(self):
+        return reverse_lazy('break_details_details', kwargs={'pk': self.object.pk})
+    
+@method_decorator(staff_student_entry_restricted(),name='dispatch')
+class BreakDetailsDeleteView(LoginRequiredMixin, DeleteView):
+    model = BreakDetails
+    success_url = reverse_lazy("break_details")
+
+
+def add_followup(request,pk):
+    obj = BreakDetails.objects.get(id=pk)
+    if request.method == 'POST':
+        staff_id,staff = request.POST.get('staff').split(" ")
+        date = request.POST.get('date')
+        notes = request.POST.get('notes')
+        join_date = request.POST.get('join-date')
+        
+        data = {
+            "staff":{"name":staff,"id":staff_id},
+            "date" : date,
+            "notes" : notes
+        }
+        
+        obj.set_followups(data)
+        obj.break_end = join_date
+        obj.save()
+        
+        return redirect('break_details_details',pk = obj.id)
+    
+    return render(request,"students/followup_form.html",{"staffs":Staff.objects.filter(current_status="active")})
+        
+        
+def delete_followup(request,pk,index):
+    obj = BreakDetails.objects.get(id=pk)
+    obj.followup.pop(index-1)
+    obj.save()
+    
+    return redirect('break_details_details',pk = obj.id)

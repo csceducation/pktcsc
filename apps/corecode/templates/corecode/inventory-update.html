@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}
+  {{title}}
+{% endblock title %}
+
+{% block scriptORstyle %}
+<style>
+    #items > p.display-6.font-weight-bolder{
+        display: none;
+    }
+  #items {
+    display: flex;
+    flex-wrap: wrap;
+    padding-left: 0;
+  }
+
+  #items div {
+    flex: 0 0 50%;
+  }
+</style>
+{% endblock scriptORstyle %}
+
+
+{% block title-side %}{% endblock title-side %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-sm-12">
+      <form method="POST" id="update-form">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          {% for field in form %}
+          <div class="form-group">
+            {{ field.label_tag}}
+            {{ field | add_class:"form-control" |add_error_class:"is-invalid" | attr:"required"}}
+            {{field.help_text}}
+            {{field.errors}}
+          </div>
+          {% endfor %}
+        </div>
+
+
+        <input type="submit" value="Save" class="w-25 btn btn-primary">
+
+      </form>
+    </div>
+    
+  </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const books = {{ books | safe }}; // Predefined list of books
+    let content = null;
+    let list = null;
+    document.querySelector("#update-form > div > div:nth-child(4) > label").style.display = 'none';
+    const txtIn = document.querySelector("#id_items");
+    txtIn.style.display = "none";
+    // document.querySelector("#items > p.display-6.font-weight-bolder").style.display = "none";
+    const contentTypeSelect = document.querySelector("#id_content_type");
+
+    // Function to generate checkboxes & quantity inputs dynamically
+    function renderSelectionForm(selectedItems = {}) {
+        const subjectList = document.createElement("div");
+        subjectList.setAttribute('id','items');
+        subjectList.classList.add('p-3')
+        subjectList.innerHTML +=
+            `<hr><p class='display-6 font-weight-bolder'>items:</p><p id='alert' style='display:none' class='text-danger'>Please enter quantity and select the ${content}</p>`;
+
+        list.forEach((subject) => {
+            const isChecked = selectedItems.hasOwnProperty(subject.id);
+            const quantityValue = isChecked ? selectedItems[subject.id] : "";
+
+            const subjectHTML = `
+                <div>
+                    <input type="checkbox" id="checkbox_${subject.id}" ${isChecked ? "checked" : ""}>
+                    <label for="checkbox_${subject.id}">${subject.name}</label>
+                    <input class="form-control w-25" type="number" id="quantity_${subject.id}" min="1" placeholder="Quantity" value="${quantityValue}">
+                </div>
+            `;
+            subjectList.innerHTML += subjectHTML;
+        });
+
+        // Append to the correct div
+        const targetDiv = document.querySelector("#update-form > div > div:nth-child(3)");
+        // targetDiv.innerHTML = ""; // Clear previous content
+        targetDiv.appendChild(subjectList);
+    }
+
+    // Function to clear the form when an unsupported content type is selected
+    function clearSelectionForm() {
+        document.getElementById('items').innerHTML = '';
+    }
+
+    // Function to load stored values only when content type is "8"
+    function loadExistingData() {
+        const selectedContentType = contentTypeSelect.value;
+        
+        if (selectedContentType === "8") {
+            list = books;
+            content = "books"
+        } else {
+            list = [];
+            clearSelectionForm();
+            return;
+        }
+
+        let storedData = txtIn.value.trim();
+        let selectedItems = {};
+
+        if (storedData) {
+            try {
+                selectedItems = JSON.parse(storedData);
+            } catch (error) {
+                console.error("Invalid JSON in txtIn:", error);
+            }
+        }
+
+        if (list.length > 0) {
+            renderSelectionForm(selectedItems);
+        }
+    }
+
+    // Event listener for content type change
+    contentTypeSelect.addEventListener("change", loadExistingData);
+
+    // Event listener for form submission
+    document.getElementById("update-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        if (!list || list.length === 0) {
+            e.target.submit();
+            return;
+        }
+
+        let inputValidated = true;
+        const jsonData = {};
+
+        list.forEach((subject) => {
+            const checkbox = document.getElementById(`checkbox_${subject.id}`);
+            const quantityInput = document.getElementById(`quantity_${subject.id}`);
+
+            if (checkbox.checked && quantityInput.value) {
+                jsonData[subject.id] = parseInt(quantityInput.value);
+            } else if (checkbox.checked && !quantityInput.value) {
+                inputValidated = false;
+            } else if (!checkbox.checked && quantityInput.value) {
+                inputValidated = false;
+            }
+        });
+
+        if (inputValidated) {
+            txtIn.value = JSON.stringify(jsonData);
+            console.log(txtIn.value);
+            console.log(jsonData);
+            e.target.submit();
+            document.getElementById("alert").style.display = "none";
+        } else {
+            document.getElementById("alert").style.display = "block";
+        }
+    });
+
+    // Load existing form data on page load
+    loadExistingData();
+});
+
+</script>
+{% endblock content %}
+
+

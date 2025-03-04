@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<form class="form " method="POST" action="{% url 'daily-activity' %}">
+    {% csrf_token %}
+    <label for="">Select Date</label>
+    <input type="date" id="date" name="date">
+    <button type="submit" class="btn btn-primary mb-2">Search</button>
+</form>
+
+{% if expected_admission %}
+<div class="enquiryact">
+    <h2>Expected Addmission</h2>
+
+<div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>Enquiry No</th>
+          <th>Full Name</th>
+          <th>Status</th>
+          <th>Mobile No</th>
+          <th>Intersted Course</th>
+          <th>counsellor</th>
+          <th>Remark</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for student in expected_admission %}
+          <tr class='clickable-row'  data-href="{% url 'enquiry-detail' student.auto_increment %}" 
+          {% if student.enquiry_status == "Admitted" %}
+          style="color: green;background-color: rgb(155, 178, 178);"
+          {% elif  student.enquiry_status == "Rejected" %}
+          style="color: red;"
+          {% else %}
+          style="color:yellow;background-color: rgb(206, 152, 152);"
+          
+          {% endif %}
+          >
+            <td>{{ student.enquiry_no}}</td>
+            <td>{{ student.name}}</td>
+            <td>{{ student.enquiry_status}}</td>
+            <td>{{ student.mobile_number}}</td>
+            <td>{% if student.course_to_join %}
+              {{student.course_to_join}}
+              {% else %}
+              {{student.new_course}}
+              {% endif %}
+            </td>
+            <td>{{ student.counsellor}}</td>
+            <td>{{ student.counsellor_remark}}</td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% if today_due_bills %}
+<div class="daydue">
+    <h2>Due Payment</h2>
+    <div class="table-responsive">
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>S.no</th>
+              <th>Enrollment No</th>
+              <th>Name</th>
+              <th>Amount</th>
+              <th>Due date</th>
+              <th>Status</th>
+              <th>SSE</th>
+              <th>Pay</th>
+              <th>Edit</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+    
+            {% for dues in today_due_bills %}
+            <tr class='clickable-row'  data-href="{% url 'student-detail' pk=dues.invoice.student.id %}" >
+                <td>{{ forloop.counter }}</td>
+                <td>{{ dues.invoice.student.enrol_no}}</td>
+                <td>{{ dues.invoice.student.student_name }}</td>
+                <td>{{ dues.amount }}</td>
+                <td>{{ dues.due_date }}</td>
+                <td>{{ dues.due_status }}</td>
+                <td>{{ dues.invoice.student.sse}}</td>
+                <td><a href="/finance/bill/?due={{dues.id}}" class="btn btn-sm btn-info">Pay 
+                </a></td>
+                <td><a href="{% url 'update_due' dues.id %}" class=" btn btn-sm btn-info">Edit
+                </a></td>
+                <td><form class="d-inline-block" method="POST" action="{% url 'delete_due' dues.id %}">
+                    {% csrf_token %}
+                    
+                    <button type="submit" class="btn btn-sm btn-danger ">Delete</button></td>
+              </tr>
+            {% endfor %}
+    
+          </tbody>
+        </table>
+      </div>
+</div>
+{% endif %}
+{% if ending_batches %}
+<div class="batches">
+    <h2>Over dated Batches</h2>
+    <div class="table-responsive">
+        <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+          <thead class="thead-light">
+            <tr>
+              <th>S/N</th>
+              <th>Batch Id</th>
+              <th>Batch status</th>
+              <th>Batch started On</th>
+              <th>Batch course</th>
+              <th>Batch Staff</th>
+              <th>Batch Timing</th>
+              <th>Total Student</th>
+            </tr>
+          </thead>
+          <tbody>
+      
+            {% for batch in ending_batches %}
+              <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
+                <td>{{ forloop.counter}}</td>
+                <td>{{ batch.batch_id}}</td>
+                <td>{{ batch.batch_status}}</td>
+                <td>{{ batch.batch_start_date}}</td>
+                <td>{{ batch.batch_course}}</td>
+                <td>{{ batch.batch_staff}}</td>
+                <td>{{ batch.batch_timing}}</td>
+                <td>{{ batch.total_student}}</td>
+              </tr>
+            {% endfor %}
+      
+          </tbody>
+        </table>
+</div>
+{% endif %}
+
+{% endblock content %}

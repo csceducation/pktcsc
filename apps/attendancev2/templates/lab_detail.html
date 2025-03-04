@@ -18,7 +18,7 @@
       {% csrf_token %}
       <div class="input-group">
         <input type="hidden" id="labId" value="{{ lab.id }}">
-        <input type="text" id="system_name" name="system_name" class="form-control" placeholder="Enter system name" style="max-width: 40%;" required>
+        <input type="text" id="system_name" name="system_name" class="form-control" placeholder="Enter system name as <sys num> eg:sys 1" style="max-width: 40%;" required>
         <button type="submit" class="btn btn-primary">Add System</button>
       </div>
     </form>
@@ -38,7 +38,7 @@
             <a href="{% url 'delete_system' lab.id system.no %}" class="btn btn-danger">Delete</a>
           </td>
           <td>
-            <a href="{% url 'add_lab_attendance' lab.id  %}" class="btn btn-light">Manage Attendance</a>
+            <a href="{% url 'lab_attendance_form' %}?{{lab.id}}" class="btn btn-light">Manage Attendance</a>
           </td>
         </tr>
         {% endfor %}

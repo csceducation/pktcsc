@@ -10,8 +10,8 @@
     <form class="form-inline mb-4" method="POST" action="{% url 'due_dashboard' %}">
         {% csrf_token %}
         <div class="form-group mx-sm-3 mb-2">
-            <label for="studentName" class="sr-only">Student Name</label>
-            <input type="text" class="form-control" id="studentName" name="student_name" placeholder="Enter student name">
+            <label for="studentName" class="sr-only">Student Enrollment Number</label>
+            <input type="text" class="form-control" id="studentName" name="enrol_no" placeholder="Enter student enrollment number">
         </div>
         <button type="submit" class="btn btn-primary mb-2">Search</button>
         <a href="/finance/dues" class="btn btn-info mx-2 mb-2">Reset</a>
@@ -24,7 +24,7 @@
             <div class="col-md-6 mb-4">
                 <div class="card">
                     <div class="card-header">
-                        Invoice #{{ due.invoice.id }} for Student : {{due.invoice.student.student_name}}
+                        Invoice #{{ due.invoice.id }} for Student : {{due.invoice.student.student_name}} ( {{due.invoice.student.enrol_no}} )
                     </div>
                     <div class="card-body">
                         <h5 class="card-title">Amount: ${{ due.amount }}</h5>

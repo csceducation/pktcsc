@@ -9,7 +9,9 @@ from .models import (
     Subject,
     Book,
     Time,
-    Exam
+    Exam,
+    AccountHeading,Schemes,
+    Inventory
 )
 
 SiteConfigForm = modelformset_factory(
@@ -52,7 +54,7 @@ class BookForm(ModelForm):
 
     class Meta:
         model = Book
-        fields = ["name"]
+        fields = "__all__"
 class TimeForm(forms.ModelForm):
     start_time = forms.TimeField(
         widget=forms.TimeInput(attrs={'type': 'time', 'placeholder': 'HH:MM'}, format='%H:%M'),
@@ -73,7 +75,7 @@ class TimeForm(forms.ModelForm):
         instance = super(TimeForm, self).save(commit=False)
         start_time = self.cleaned_data.get('start_time')
         end_time = self.cleaned_data.get('end_time')
-        instance.time = f"{start_time.strftime('%H:%M')} - {end_time.strftime('%H:%M')}"
+        instance.time = f"{start_time.strftime('%I:%M %p')} - {end_time.strftime('%I:%M %p')}"
         if commit:
             instance.save()
         return instance
@@ -82,7 +84,7 @@ class ExamForm(ModelForm):
 
     class Meta:
         model = Exam
-        fields = ["name","exam_mode","exam_duration"]
+        fields = "__all__"
 
 
 class StudentClassForm(ModelForm):
@@ -92,6 +94,24 @@ class StudentClassForm(ModelForm):
         model = StudentClass
         fields = ["name"]
 
+class AccountHeadingForm(ModelForm):
+    prefix = "Account Heading"
+
+    class Meta:
+        model = AccountHeading
+        fields = ["name"]
+
+class SchemesForm(ModelForm):
+    prefix = "Scheme"
+
+    class Meta:
+        model = Schemes
+        fields = ["name","scheme_status","start_date","end_date"]
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+        }
+        
 
 class CurrentSessionForm(forms.Form):
     current_session = forms.ModelChoiceField(
@@ -102,3 +122,12 @@ class CurrentSessionForm(forms.Form):
         queryset=AcademicTerm.objects.all(),
         help_text='Click <a href="/term/create/?next=current-session/">here</a> to add new term',
     )
+
+class InventoryForm(ModelForm):
+    class Meta:
+        model = Inventory
+        fields = '__all__'
+        widgets = {
+            'order_date':forms.DateInput(attrs={'type': 'date'}),
+        }
+

@@ -1,10 +1,38 @@
 {% extends 'base.html' %}
 
+{% block scriptORstyle %}
+<style>
+  .not-covered-list li {
+      list-style: none;
+  }
+  .session-topics {
+      /* display: flex; */
+      /* align-items: center; */
+      /* flex-wrap: wrap; */
+      /* gap: 10px; */
+  }
+  .session-topics a {
+      /* margin-left: auto; */
+      text-decoration: none;
+      color: #0d6efd;
+  }
+  .session-topics a:hover {
+      text-decoration: underline;
+  }
+  .section-title {
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 5px;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+      font-weight: bold;
+  }
+</style>
+{% endblock scriptORstyle %}
 {% block content-header %}
 <div class="card-header">
   <div class="card-tools">
     <a href="{% url 'add_student' batch.id%}"><input type="button" class="btn btn-sm btn-primary" value="Add Student"></a>
-    <a href="{% url 'theory_attendance' batch.id%}" class="btn btn-info btn-sm">
+    <a href="{% url 'theory_attendance_form' batch.id%}" class="btn btn-info btn-sm">
       Theory Attendance
     </a>
     <a href="#" class="btn btn-tool">Print</a>
@@ -20,6 +48,7 @@
 {% block content %}
 
 <style>
+  
     .section {
         padding: 1  0px 0;
         position: relative;
@@ -127,7 +156,7 @@
         <div class="row align-items-center flex-row-reverse">
             <div class="col-lg-12">
                 <div class="about-text go-to">
-                    <h3 class="dark-color">Batch Details</h3>
+                    <h3 class="dark-color mt-4 text-center">Batch Details</h3>
                     <h4>Batch ID : {{batch.batch_id}}</h4>
                     <div class="row about-list">
                         <div class="col-md-6">
@@ -211,36 +240,62 @@
     </div>
 </section>
 
-{% comment %} 
-  <div class="container mt-5">
-    <h2 class="mb-4">Batch Detail</h2>
+<section class="gray-bg py-5">
+  <h1 class="text-center my-4  dark-color font-weight-bold">Topics Overview</h1>
+  <!-- Covered Topics -->
+  <div class="container p-2">
+    <section>
+        <div class="section-title text-success h2 font-weight-bold">
+            Covered Topics
+        </div>
+        <div>
+            {% if covered %}
+                {% for session in attendance_details %}
+                    <div class="mb-4">
+                        <ul class="session-topics list-unstyled d-flex flex-wrap gap-3 h6 p-2">
+                            <strong>Day: {{ forloop.counter }} - </strong>
+                            <span class="text-muted mx-3">
+                                <strong>Staff:</strong> {{ session.staff }} |
+                                <strong>Date:</strong> {{ session.date }}
+                            </span>
+                            {% for topic in session.content %}
+                                <li class="badge bg-info text-dark mx-2 py-2 px-3 border">
+                                    {{ topic }}
+                                </li>
+                            {% endfor %}
+                            <a href="{% url 'theory_attendance_form' batch.id %}?contents=[{% for topic in session.content %}'{{ topic|urlencode }}'{% if not forloop.last %}, {% endif %}{% endfor %}]"
+                               class="text-decoration-none text-primary mx-5">
+                                Update Session {{ forloop.counter }}
+                            </a>
+                        </ul>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-danger">No topics are covered yet.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
 
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{{ batch.Batch_id }}</h5>
-        <p class="card-text">Start Date: {{ batch.batch_start_date }}</p>
-        <p class="card-text">End Date: {{ batch.batch_end_date }}</p>
-        <p class="card-text">Status: {{ batch.batch_status }}</p>
-        <p class="card-text">Timing: {{ batch.batch_timing }}</p>
+  <!-- Not Covered Topics -->
+  <div class="container">
+      <section>
+          <div class="section-title text-danger h2 font-weight-bold">
+              Not Covered Topics
+          </div>
+          <div class="h6">
+              {% if not_covered %}
+                  <ul class="not-covered-list">
+                      {% for topic in not_covered %}
+                          <li class="mb-2">• {{ topic }}</li>
+                      {% endfor %}
+                  </ul>
+              {% else %}
+                  <p class="text-success">All topics are covered!</p>
+              {% endif %}
+          </div>
+      </section>
+  </div>
+</section>
 
-        <h4 class="mt-4">Course Details</h4>
-        <p>Course Name: {{ batch.batch_course.course_name }}</p>
-        <p>Course Duration: {{ batch.batch_course.course_duration }}</p>
-
-        <h4 class="mt-4">Staff Details</h4>
-        <p>Staff Name: {{ batch.batch_staff.name }}</p>
-
-        <h4 class="mt-4">Student Details</h4>
-        <ul>
-          {% for student in batch.batch_students.all %}
-            <li>{{ student.student_name }} - {{ student.enrol_no }}</li>
-          {% endfor %}
-        </ul>
-
-        <a href="" class="btn btn-primary">Update</a>
-        <a href="" class="btn btn-danger">Delete</a>
-        <a href="{% url 'batch_list' %}" class="btn btn-secondary">Back to Batch List</a>
-      </div>
-    </div>
-  </div> {% endcomment %}
 {% endblock content%}

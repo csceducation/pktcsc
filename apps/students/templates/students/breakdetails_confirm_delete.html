@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+{% endblock title %}
+
+
+{% block content %}
+
+<form action="" method="POST">
+  {% csrf_token %}
+
+  <div class="alert">
+    <p>Are you sure you want to delete "BreakForm"?</p>
+    <p>Student Provided in the Data will be remain inactive</p>
+    <p>update the data to set _is_joined = yes to reactivate Student</p>
+  </div>
+
+  <input type="submit" class="btn btn-primary" value="Confirm">
+
+</form>
+
+
+{% endblock content %}

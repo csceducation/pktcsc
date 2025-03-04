@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
-
+{% load custom_filters %}
 
 {% block title %}
 books
@@ -16,14 +16,21 @@ books
   
 
 {% block content %}
+
   <div class="row">
     <div class="col-sm-12">
 
         <table class="table table-bordered">
+          <thead>
+            <th>Name</th>
+            <th>Stock Level</th>
+            <th>Action</th>
+          </thead>
           <tbody>
             {% for object in object_list %}
             <tr>
               <td>{{ object }}</td>
+              <td>{{ stock|get_item:object.id }}</td>
               <td><a href="{% url 'book-update' object.id %}"><i
                     class="fa fa-edit"></i></a> <a
                   href="{% url 'bookdelete' object.id %}"><i

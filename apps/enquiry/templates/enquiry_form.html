@@ -13,9 +13,23 @@
     <form method="post" action="" class="needs-validation" id="myform">
       {% csrf_token %}
       {% if form.errors %}
+      </div>
       <div class="alert alert-danger">
         <strong>Error:</strong> There are issues with your submission.
       </div>
+      <div class="form-group row">
+        <label class="col-sm-3 col-form-label" for="{{ field.auto_id }}">
+          {{ form.consent.label }}
+          {% for error in form.consent.errors %}
+            <small id="{{ field.auto_id }}" class="text-danger">{{ error }}</small>
+          {% endfor %}
+        </label>
+        <div class="col-sm-9">
+          {{ form.consent }}
+          {% if field.help_text %}
+            <small>{{ field.help_text|safe }}</small>
+          {% endif %}
+        </div>
       {% endif %}
       
       <!-- Personal Info Page -->
@@ -115,6 +129,8 @@
           e.target.value = e.target.value.toUpperCase();
       }
   });
+  {% if object == None %}
   document.getElementById('id_enquiry_status').options[1].disabled = true
+  {% endif %}
   </script>
 {% endblock content %}

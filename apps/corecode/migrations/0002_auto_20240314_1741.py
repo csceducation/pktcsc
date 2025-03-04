@@ -3,12 +3,12 @@
 from django.db import migrations
 from apps.corecode.models import User
 import datetime
+from csc_app.context_processor import company,site_pass,uname
 
 
 def default_site_config(apps, schema_editor):
     """Default site configurations"""
-
-    User.objects.create_superuser("pktcsc", "vdmcsc4@gmail.com", "622001")
+    User.objects.create_superuser(uname, "vdmcsc4@gmail.com", site_pass)
     Config = apps.get_model("corecode", "SiteConfig")
     Config.objects.bulk_create(
         [
@@ -20,7 +20,7 @@ def default_site_config(apps, schema_editor):
     Session = apps.get_model("corecode", "AcademicSession")
     Session.objects.bulk_create(
         [
-            Session(name="Pudukkottai  ", current=True),
+            Session(name=company, current=True),
         ]
     )
 

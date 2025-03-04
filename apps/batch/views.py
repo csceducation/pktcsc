@@ -12,6 +12,9 @@ from apps.students.models import Classmodel
 from django.utils import timezone
 from apps.students.models import Student
 from apps.corecode.models import Time
+from apps.attendancev2.manager import AttendanceManagerV2
+from csc_app.settings import db
+from apps.corecode.utils import debug_info
 
 
 def BatchListView(request):
@@ -25,9 +28,11 @@ def BatchListView(request):
     else:
         # For regular staff users, filter batches where staff matches the user
         batches = BatchModel.objects.filter(batch_staff=user.staff_profile)
-
+    # Filter batches that are out of end date and still active
+    current_date = timezone.now().date()
+    expired_batches = batches.filter(batch_end_date__lt=current_date, batch_status="Active")
     template_name = "batch/batchlist.html"
-    context = {"batches": batches}
+    context = {"batches": batches,'expired_batches':expired_batches}
     
     return render(request, template_name, context)
 class BatchDetailView(DetailView):
@@ -36,12 +41,23 @@ class BatchDetailView(DetailView):
     context_object_name = 'batch'
     def get_context_data(self, **kwargs):
         context = super(BatchDetailView, self).get_context_data(**kwargs)
+        manager = AttendanceManagerV2(db)
+        # context['finished'] = [item for sublist in finished for item in sublist]
+        finished,data = manager.get_finished_topics_batch(self.object.id)
+        # debug_info(data)
+        context['covered'] = finished
+        context['attendance_details'] = data
+        finished_flat = [item for sublist in finished for item in sublist]
+        contents = list(self.object.batch_course.get_day_contents().values())
+        context['not_covered'] = [topic for topic in contents if topic not in finished_flat]  # Not covered topics
+        # debug_info(context)
         return context
 class AddStudentView(View):
     template_name = 'batch/add_student.html'
     def get(self, request, *args, **kwargs):
-        student_detail = Student.objects.filter(current_status = "active")
         batch = get_object_or_404(BatchModel, pk=kwargs['pk'])
+        # student_detail = Student.objects.filter(current_status = "active")
+        student_detail = Student.objects.filter(course__coursesubjectmodel__sub_name=batch.batch_course,current_status="active")
         add_student_form = AddStudentForm(instance=batch)
         context = {'batch': batch, 'add_student_form': add_student_form,'stu':student_detail}
         return render(request, self.template_name, context)
@@ -74,6 +90,16 @@ class AddStudentView(View):
                 )
 
         return redirect('batch_detail', pk=batch.id)
+class BatchModelUpdateFormV2(forms.ModelForm):
+    class Meta:
+        model = BatchModel
+        fields = "__all__"
+        exclude = ['batch_students']
+        widgets = {
+            'batch_start_date': forms.DateInput(attrs={'type': 'date'}),
+            'batch_end_date': forms.DateInput(attrs={'type': 'date'}),
+            'batch_students': forms.SelectMultiple(attrs={'size': 10}),
+        }
 class BatchModelUpdateForm(forms.ModelForm):
     class Meta:
         model = BatchModel
@@ -84,6 +110,19 @@ class BatchModelUpdateForm(forms.ModelForm):
             'batch_end_date': forms.DateInput(attrs={'type': 'date'}),
             'batch_students': forms.SelectMultiple(attrs={'size': 10}),
         }
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        batch_staff = cleaned_data.get('batch_staff')
+        batches = BatchModel.objects.filter(batch_staff=batch_staff, batch_status="Active")
+        if batches.exists():
+            for batch in batches:
+                if batch.batch_timing == cleaned_data.get('batch_timing'):# need not to check for date as we are checking against the active batches only
+                    
+                    raise forms.ValidationError("There is an error in your form")
+        
+        return cleaned_data
+    
 class BatchCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
     model = BatchModel
     form_class = BatchModelUpdateForm
@@ -100,42 +139,60 @@ class BatchCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
         form = BatchModelUpdateForm()
         form.fields['batch_id'].initial = self.get_auto_id()  # Replace generate_auto_id() with your logic
 
-            
-        return render(request, 'batch/batchform.html', {'form': form})
+        subjects = Subject.objects.all()
+        end_dates = {}
+        for subject in subjects:
+            end_dates[subject.id] = subject.calculate_duration()
+        extra = {
+            "subject_end_date":end_dates
+        }
+        
+        return render(request, 'batch/batchform.html', {'form': form,**extra})
     def post(self, request, *args, **kwargs):
 
             form = BatchModelUpdateForm(request.POST)
             
             if form.is_valid():
                 return self.form_valid(form)
-            
+            else: 
+                return self.form_invalid(form)
             return render(request, self.template_name, {'form': form})
 
     def form_valid(self, form):
             
             response = super().form_valid(form)
             return response
-
+    def form_invalid(self, form):
+        # Custom error handling
+        self.object = None
+        form.add_error('batch_timing', 'Staff is already assigned to an active batch on the same time.')
+        # You can also add specific errors to a specific field
+        # form.add_error('fieldname', 'Custom error message')
+        return super().form_invalid(form)
+    
 class BatchUpdateView(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     model = BatchModel
-    form_class = BatchModelUpdateForm
+    form_class = BatchModelUpdateFormV2
     template_name = "batch/batchform.html"
     success_message = "Record successfully updated."
     def form_valid(self, form):
         # Update the BatchModel instance
         response = super().form_valid(form)
 
-        # Update the end_date in associated Classmodel instances
-        new_end_date = form.cleaned_data['batch_end_date']
-        for student in self.object.batch_students.all():
-            classmodel_instance = Classmodel.objects.get(student=student)
-            classmodel_instance.end_date = new_end_date
-            classmodel_instance.save()
 
 
-
+        # # Update the end_date in associated Classmodel instances
+        # new_end_date = form.cleaned_data['batch_end_date']
+        # for student in self.object.batch_students.all():
+        #     classmodel_instance = Classmodel.objects.get(student=student)
+        #     classmodel_instance.end_date = new_end_date
+        #     classmodel_instance.save()
+        
         return response
 
+
+
+    
     def get_success_url(self):
         return reverse_lazy('batch_detail', kwargs={'pk': self.object.pk})
 

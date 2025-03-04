@@ -16,7 +16,18 @@
 .total{
     width: 100%;
 }
-
+#allshow tr{
+    padding: 10px;
+    font-size: 20px;
+    font-weight: 500px;
+    color: #d215a6;
+    text-align: left;
+    text-transform: uppercase;
+    margin-top: 10px;
+    padding: 4px;
+    background-color: rgba(19, 18, 18, 0);
+    width: 100%;
+}
 </style>
 <body>
   <form method="post" action="{% url 'bill_statement' %}">
@@ -28,6 +39,7 @@
     <button type="submit">Get Bill History</button>
 </form>
 {% if bills %}
+
 <h1 class="awesome-heading">Bill history : From {{startd}} to {{endd}} </h1>
 <div class="table-responsive">
     <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
@@ -35,14 +47,14 @@
         <tr>
           <th>Date</th>
           <th>Bill No</th>
-          <th>Registration Number</th>
+          <th>Roll Number</th>
           <th>Name</th>
           <th>Course</th>
           <th>Amount</th>
           <th>GST(18%)</th>
           <th>Total Amount</th>
 
-          <th></th>
+          
         </tr>
       </thead>
       <tbody>
@@ -75,9 +87,10 @@
 
       </tbody>
     </table>
-  </div>
+    
   {% else %}
   <p>No bills found for the selected date range.</p>
+  
 {% endif %}
 </body>
 {% endblock %}

@@ -18,6 +18,7 @@
             <table class="table table-bordered mt-3">
                 <thead class="thead-light">
                     <tr>
+                        <th>Student enroll</th>
                         <th>Student Name</th>
                         <th>Status</th>
                         <th>Entry Time</th>
@@ -27,6 +28,7 @@
                 <tbody>
                     {% for student in students_data %}
                     <tr>
+                        <td>{{student.enroll}}</td>
                         <td>{{ student.name }}</td>
                         <td>
                             <select name="status_{{ student.student_id }}" id="status_{{ student.student_id }}" class="form-control status-select" style="max-width: 200px;">
@@ -61,7 +63,7 @@
             <tbody>
                 {% for student in students_data %}
                 <tr>
-                    <td>{{ student.name }}</td>
+                    <td>{{ student.name }} {{student_id}}</td>
                     <td>{% if student.status %}
                         {{ student.status }}
                     {% else %}

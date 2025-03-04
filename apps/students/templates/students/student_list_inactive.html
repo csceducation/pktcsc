@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Students{% endblock title %}
+
+{% block breadcrumb %}
+<a href="{% url 'student-list' %}" style="font-size: 0.8rem;" class="btn btn-primary">active Students</a>
+{% endblock breadcrumb %}
+
+{% block content %}
+  <div class="table-responsive">
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+      <thead class="thead-light">
+        <tr>
+          <th>S/N</th>
+          <th>Registration Number</th>
+          <th>Fullname</th>
+          <th>Current Class</th>
+          <th>Gender</th>
+          <th>Mobile Phone Number</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        {% for student in students %}
+          <tr class='clickable-row' data-href="{% url 'student-detail' student.id %}">
+            <td>{{ forloop.counter}}</td>
+            <td>{{ student.enrol_no}}</td>
+            <td>{{ student.student_name}}</td>
+            <td>{{ student.course}}</td>
+            <td>{{ student.gender}}</td>
+            <td>{{ student.mobile_number}}</td>
+          </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+{% endblock content %}
+
+
+{% block morejs %}
+<script>
+  $('#studenttable').DataTable({
+  });
+</script>
+
+{% endblock morejs %}

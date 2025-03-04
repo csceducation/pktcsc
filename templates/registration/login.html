@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
-  <title>Pudukkottai   CSC</title>
+  <title>{{company}}   CSC</title>
   
   <!-- Font Awesome Icons -->
   <link rel="stylesheet"
@@ -42,7 +42,7 @@
             <form class="login100-form validate-form" method="post" action="{% url 'login' %}">
                 {% csrf_token %}
                 <span class="login100-form-title" style="margin-top:40px  ">
-                  Pudukkottai   CSC
+                  {{company}}   CSC
                                 </span>
                 <span class="error-msg"> 
                     {% if form.errors %}

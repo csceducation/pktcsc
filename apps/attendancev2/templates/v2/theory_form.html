@@ -1,0 +1,849 @@
+{% extends 'base.html' %} {% block scriptORstyle %}
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.8.3/angular.min.js"
+  integrity="sha512-KZmyTq3PLx9EZl0RHShHQuXtrvdJ+m35tuOiwlcZfs/rE7NZv29ygNA8SFCkMXTnYZQK2OX0Gm2qKGfvWEtRXA=="
+  crossorigin="anonymous"
+  referrerpolicy="no-referrer"
+></script>
+<style>
+  /* Custom Confirm Dialog */
+  .custom-confirm {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+
+  .custom-confirm.hidden {
+    display: none;
+  }
+
+  .custom-confirm-box {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 300px;
+  }
+
+  .custom-confirm-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .custom-confirm-message {
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+
+  .custom-confirm-actions {
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .custom-confirm-actions .btn {
+    padding: 8px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .custom-confirm-actions .btn-primary {
+    background-color: #007bff;
+    color: #fff;
+  }
+
+  .custom-confirm-actions .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  .custom-confirm-actions .btn-secondary {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  .custom-confirm-actions .btn-secondary:hover {
+    background-color: #565e64;
+  }
+
+  /* Content Selection Styles */
+  .content-selector {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fff;
+  }
+
+  .search-container {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 8px;
+    transition: border-color 0.3s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.2);
+  }
+
+  .dropdown-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .dropdown-item:last-child {
+    border-bottom: none;
+  }
+
+  .dropdown-item:hover {
+    background-color: #f5f8ff;
+  }
+
+  .dropdown-item.selected {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+  }
+
+  .selected-contents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+    min-height: 35px;
+    padding: 5px;
+  }
+
+  .selected-item {
+    background-color: #e8f0fe;
+    color: #1a73e8;
+    padding: 6px 12px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    border: 1px solid #4a90e2;
+  }
+
+  .remove-btn {
+    cursor: pointer;
+    color: #5f6368;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+  }
+
+  .remove-btn:hover {
+    color: #d93025;
+    background-color: rgba(217, 48, 37, 0.1);
+  }
+
+  .no-results {
+    padding: 12px 15px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    background-color: #f8f9fa;
+  }
+
+  /* Scrollbar Styling */
+  .dropdown-list::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .dropdown-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+
+  .dropdown-list::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+
+  .dropdown-list::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+
+  /* Mobile Responsiveness */
+  @media (max-width: 768px) {
+    .search-container {
+      max-width: 100%;
+    }
+
+    .selected-item {
+      padding: 4px 10px;
+      font-size: 13px;
+    }
+
+    .remove-btn {
+      width: 16px;
+      height: 16px;
+      font-size: 14px;
+    }
+  }
+</style>
+{% endblock scriptORstyle %} {% block content %}
+<div class="mt-4 container" ng-app="BatchApp" ng-controller="BatchController">
+  <h1 class="mb-4">Batch Management</h1>
+
+  <!-- Content Search and Selection -->
+  <div class="content-selector">
+    <h3>Step 1: Select Contents</h3>
+    <div class="search-container">
+      <input
+        type="text"
+        ng-model="contentSearch"
+        ng-focus="showContentDropdown = true"
+        placeholder="Search contents..."
+        class="search-input"
+      />
+      <div class="selected-contents">
+        <div ng-repeat="content in selectedContents" class="selected-item">
+          [[content.name]]
+          <span ng-click="removeContent(content)" class="remove-btn"
+            >&times;</span
+          >
+        </div>
+      </div>
+      <div class="dropdown-list" ng-show="showContentDropdown">
+        <div
+          ng-repeat="content in contents | filter:contentSearch"
+          ng-click="toggleContent(content)"
+          ng-class="{'selected': content.selected}"
+          class="dropdown-item"
+        >
+          [[content.name]]
+        </div>
+        <div
+          ng-show="(contents | filter:contentSearch).length === 0"
+          class="no-results"
+        >
+          No matching contents found
+        </div>
+
+        <div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enter Session Details -->
+  <div class="mb-4">
+    <h3>Step 2: Enter Session Details</h3>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label for="session-date" class="form-label">Date:</label>
+        <input
+          type="date"
+          id="session-date"
+          ng-model="session.date"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="col-md-4">
+        <label for="entry-time" class="form-label">Entry Time:</label>
+        <input
+          type="time"
+          id="entry-time"
+          ng-model="session.entry"
+          class="form-control"
+          required
+        />
+      </div>
+      <div class="col-md-4">
+        <label for="exit-time" class="form-label">Exit Time:</label>
+        <input
+          type="time"
+          id="exit-time"
+          ng-model="session.exit"
+          class="form-control"
+          required
+        />
+      </div>
+    </div>
+    <div class="d-flex flex-row align-items-center my-2">
+      <select ng-model="selectedStaff" ng-options="staff.id as staff.name for staff in staffs"></select>
+
+      <button
+        ng-click="addSession()"
+        ng-disabled="!isValidSession()"
+        class="btn btn-success mx-4"
+      >
+        Add Session
+      </button>
+    </div>
+  </div>
+
+  <!-- Select Students -->
+  <div class="mb-4">
+    <h3>Step 3: Select Students</h3>
+    <div class="form-check" ng-repeat="student in availableStudents">
+      <input
+        type="checkbox"
+        id="student-[[student.id]]"
+        class="form-check-input"
+        ng-model="student.selected"
+      />
+      <label for="student-[[student.id]]" class="form-check-label">
+        [[student.id]] - [[student.name]]
+      </label>
+    </div>
+  </div>
+
+  <!-- Display and Edit Sessions -->
+  <h3>Selected Sessions:</h3>
+  <div ng-repeat="session in sessions track by $index" class="card mb-3">
+    <div class="card-body">
+      <p>
+        <strong>Date:</strong> [[session.date]] |
+        <strong>Entry:</strong> [[formatTimeDisplay(session.entry)]] |
+        <strong>Exit:</strong> [[formatTimeDisplay(session.exit)]]
+      </p>
+      <p><strong>Students:</strong> [[session.students.join(', ')]]</p>
+      {% if request.user.is_superuser %}
+      <div>
+        <button
+          class="btn btn-primary btn-sm me-2"
+          ng-click="editSession($index)"
+        >
+          Edit
+        </button>
+        <button class="btn btn-danger btn-sm" ng-click="deleteSession($index)">
+          Delete
+        </button>
+      </div>
+      {% else %}
+
+        <div>
+          <p class="text-danger font-weight-bold">Editing not allowed for staffs</p>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Edit Session Modal -->
+  <div
+    ng-if="editingSession !== null"
+    class="modal fade show"
+    tabindex="-1"
+    style="display: block; background: rgba(0, 0, 0, 0.5)"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Session</h5>
+          <button
+            type="button"
+            class="btn-close"
+            ng-click="cancelEdit()"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="edit-date" class="form-label">Date:</label>
+            <input
+              type="date"
+              id="edit-date"
+              ng-model="editSessionData.date"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="edit-entry" class="form-label">Entry Time:</label>
+            <input
+              type="time"
+              id="edit-entry"
+              ng-model="editSessionData.entry"
+              class="form-control"
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="edit-exit" class="form-label">Exit Time:</label>
+            <input
+              type="time"
+              id="edit-exit"
+              ng-model="editSessionData.exit"
+              class="form-control"
+              required
+            />
+          </div>
+          <div>
+            <label>select staff</label>
+            <select ng-model="editSessionData.staff" ng-options="staff.id as staff.name for staff in staffs"></select>
+          </div>
+          <div>
+            <h5>Update Students:</h5>
+            <div class="form-check" ng-repeat="student in allStudents">
+              <input
+                type="checkbox"
+                id="edit-student-[[student.id]]"
+                class="form-check-input"
+                ng-model="student.selected"
+                ng-disabled="isStudentInOtherSession(student.id, editingSession)"
+              />
+              <label for="edit-student-[[student.id]]" class="form-check-label">
+                [[student.id]] - [[student.name]]
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            ng-click="updateSession()"
+            ng-disabled="!isValidEditSession()"
+            class="btn btn-success"
+          >
+            Update
+          </button>
+          <button class="btn btn-secondary" ng-click="cancelEdit()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button
+    ng-click="saveBatch()"
+    ng-disabled="!sessions.length"
+    class="btn btn-primary"
+  >
+    Submit Batch
+  </button>
+
+  <!-- custom delete confirmation  -->
+  <div id="custom-confirm" class="custom-confirm hidden">
+    <div class="custom-confirm-box">
+      <h4 class="custom-confirm-title">Are you sure?</h4>
+      <p class="custom-confirm-message">
+        Do you really want to perform this action?
+      </p>
+      <div class="custom-confirm-actions">
+        <button id="confirm-yes" class="btn btn-primary">Yes</button>
+        <button id="confirm-no" class="btn btn-secondary">No</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    angular.module('BatchApp', [])
+      .config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('[[').endSymbol(']]');
+      })
+      .controller('BatchController', function($scope, $http) {
+        //function defined before anything for time model
+        // Convert time to Indian time
+        const formatIndianTime = (date, timeDate) => {
+          try {
+            if (!date || !timeDate) return null;
+
+            const baseDate = new Date(date);
+            const timeObj = new Date(timeDate);
+
+            baseDate.setHours(
+              timeObj.getHours(),
+              timeObj.getMinutes(),
+              0,
+              0
+            );
+
+            return baseDate;
+          } catch (error) {
+            console.error('Error formatting date/time:', error);
+            return null;
+          }
+        };
+
+        // Initialize scope variables
+        var now = new Date();
+        $scope.contents = [];
+        $scope.students = [];
+        $scope.sessions = [];
+        $scope.session = {
+          date: new Date(),
+          entry: formatIndianTime(now,now.toISOString()),
+          exit: formatIndianTime(now,now.toISOString())
+        };
+        $scope.batchId = {{ batch_id }};
+        $scope.availableStudents = [];
+        $scope.allStudents = [];
+        $scope.editingSession = null;
+        $scope.editSessionData = null;
+        $scope.contentSearch = '';
+        $scope.showContentDropdown = false;
+        $scope.selectedContents = [];
+        $scope.prev_content = getQueryString();
+        $scope.selectedStaff = {{batch_staff.id}};
+        $scope.selectedStaffForUpdate = {{batch_staff.id}};
+        $scope.staffs = {{staffs | safe}};
+        $scope.host = window.location.origin;
+        $scope.$watch('availableStudents',()=>{
+          console.log($scope.availableStudents);
+        })
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+          if (!event.target.closest('.search-container')) {
+            $scope.$apply(function() {
+              $scope.showContentDropdown = false;
+            });
+          }
+        });
+
+        function getQueryString() {
+          const queryString = window.location.search;
+          if (!queryString) {
+            return '';
+          }
+          const params = new URLSearchParams(queryString);
+          let result = [];
+          for (const [key, value] of params) {
+            result.push(`${value}`);
+          }
+          return result.join(", ");
+        }
+
+        function showCustomConfirm(message, callback) {
+          const confirmDialog = document.getElementById('custom-confirm');
+          const confirmMessage = confirmDialog.querySelector('.custom-confirm-message');
+          const yesButton = document.getElementById('confirm-yes');
+          const noButton = document.getElementById('confirm-no');
+
+          // Set message
+          confirmMessage.textContent = message;
+
+          // Show dialog
+          confirmDialog.classList.remove('hidden');
+
+          // Handle Yes button
+          yesButton.onclick = () => {
+            confirmDialog.classList.add('hidden');
+            callback(true); // Execute callback with `true`
+          };
+
+          // Handle No button
+          noButton.onclick = () => {
+            confirmDialog.classList.add('hidden');
+            callback(false); // Execute callback with `false`
+          };
+        }
+
+        const baseUrl = `${$scope.host}/attendance/api/`;
+
+        // Format time to 24-hour display
+        $scope.formatTimeDisplay = function(dateTime) {
+          if (!dateTime) return '';
+          const date = new Date(dateTime);
+          return date.toLocaleTimeString('en-IN', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        };
+
+        
+        // Toggle content selection
+        $scope.toggleContent = function(content) {
+          content.selected = !content.selected;
+
+          if (content.selected) {
+            $scope.selectedContents.push(content);
+          } else {
+            const index = $scope.selectedContents.findIndex(c => c.name === content.name);
+            if (index > -1) {
+              $scope.selectedContents.splice(index, 1);
+            }
+          }
+        };
+
+        // Remove content from selection
+        $scope.removeContent = function(content) {
+          content.selected = false;
+          const index = $scope.selectedContents.findIndex(c => c.name === content.name);
+          if (index > -1) {
+            $scope.selectedContents.splice(index, 1);
+          }
+        };
+
+        if ($scope.prev_content) {
+          prev_content = {
+            'prev_content': $scope.prev_content
+          }
+        } else {
+          prev_content = [];
+        }
+
+        // Fetch combined data from backend and populate existing data
+        $http.post(`${baseUrl}batch_details/${$scope.batchId}/`, prev_content).then(function(response) {
+          // Initialize contents with selected state based on existing data
+          $scope.contents = response.data.contents.map(c => ({
+            name: c,
+            selected: response.data.existing?.content?.includes(c) || false
+          }));
+          // Initialize selected contents
+          $scope.selectedContents = $scope.contents.filter(c => c.selected);
+
+          // Initialize students
+          $scope.students = response.data.students.map(s => ({ id: s.id, selected: true,name:s.name }));
+          console.log($scope.students);
+          $scope.allStudents = angular.copy($scope.students);
+
+
+          // Populate existing sessions if available
+          if (response.data.existing?.sessions) {
+            $scope.sessions = response.data.existing.sessions.map(session => ({
+              date: new Date(session.date).toISOString().split('T')[0],
+              entry: new Date(session.entry),
+              exit: new Date(session.exit),
+              students: session.students,
+              staff:session.staff
+            }));
+          }
+
+          // Update available students based on existing sessions
+          $scope.updateAvailableStudents();
+        });
+
+        // Validate session input
+        $scope.isValidSession = function() {
+          if (!$scope.session.date || !$scope.session.entry || !$scope.session.exit) {
+            return false;
+          }
+
+          const entryDate = new Date($scope.session.entry);
+          const exitDate = new Date($scope.session.exit);
+          return entryDate < exitDate;
+        };
+
+        // Add session with validation
+        $scope.addSession = function() {
+          if (!$scope.isValidSession()) {
+            alert("Please check all session details are valid.");
+            return;
+          }
+
+          const selectedStudents = $scope.availableStudents
+            .filter(s => s.selected)
+            .map(s => s.id);
+
+          if (selectedStudents.length === 0) {
+            alert("Please select at least one student.");
+            return;
+          }
+
+          const entryTime = formatIndianTime($scope.session.date, $scope.session.entry);
+          const exitTime = formatIndianTime($scope.session.date, $scope.session.exit);
+
+          if (!entryTime || !exitTime) {
+            alert("Invalid date/time format.");
+            return;
+          }
+
+          $scope.sessions.push({
+            date: new Date($scope.session.date).toISOString().split('T')[0],
+            entry: entryTime,
+            exit: exitTime,
+            students: selectedStudents,
+            staff:$scope.selectedStaff
+          });
+          console.log($scope.sessions);
+
+          $scope.updateAvailableStudents();
+
+          // Reset form
+          $scope.session = {
+            date: new Date(),
+            entry: null,
+            exit: null,
+            staff:$scope.selectedStaff
+          };
+          $scope.availableStudents.forEach(s => s.selected = true);
+        };
+
+        // Edit session
+        $scope.editSession = function(index) {
+          $scope.editingSession = index;
+          const session = $scope.sessions[index];
+
+          $scope.editSessionData = {
+            date: new Date(session.date),
+            entry: new Date(session.entry),
+            exit: new Date(session.exit),
+            students: [...session.students],
+            staff:session.staff
+          };
+
+          // Mark selected students in edit mode
+          $scope.allStudents.forEach(student => {
+            student.selected = session.students.includes(student.id);
+          });
+        };
+
+        // Check if student is in other sessions
+        $scope.isStudentInOtherSession = function(studentId, currentSessionIndex) {
+          return $scope.sessions.some((session, index) =>
+            index !== currentSessionIndex &&
+            session.students.includes(studentId)
+          );
+        };
+
+        // Update session
+        $scope.updateSession = function() {
+          if (!$scope.isValidEditSession()) {
+            alert("Please check all session details are valid.");
+            return;
+          }
+
+          const selectedStudents = $scope.allStudents
+            .filter(s => s.selected)
+            .map(s => s.id);
+
+          if (selectedStudents.length === 0) {
+            alert("Please select at least one student.");
+            return;
+          }
+
+          const entryTime = formatIndianTime($scope.editSessionData.date, $scope.editSessionData.entry);
+          const exitTime = formatIndianTime($scope.editSessionData.date, $scope.editSessionData.exit);
+
+          if (!entryTime || !exitTime) {
+            alert("Invalid date/time format.");
+            return;
+          }
+
+          $scope.sessions[$scope.editingSession] = {
+            date: new Date($scope.editSessionData.date).toISOString().split('T')[0],
+            entry: entryTime,
+            exit: exitTime,
+            students: selectedStudents,
+            staff:$scope.editSessionData.staff
+          };
+
+          $scope.updateAvailableStudents();
+          $scope.cancelEdit();
+        };
+
+        // Delete session
+        $scope.deleteSession = function(index) {
+          showCustomConfirm('Are you sure you want to delete this session?', function(confirmed) {
+            if (confirmed) {
+              $scope.$apply(() => {
+                $scope.sessions.splice(index, 1);
+                $scope.updateAvailableStudents();
+              });
+            }
+          });
+        };
+
+
+        // Cancel edit
+        $scope.cancelEdit = function() {
+          $scope.editingSession = null;
+          $scope.editSessionData = null;
+        };
+
+        // Validate edit session
+        $scope.isValidEditSession = function() {
+          if (!$scope.editSessionData) return false;
+
+          if (!$scope.editSessionData.date ||
+              !$scope.editSessionData.entry ||
+              !$scope.editSessionData.exit) {
+            return false;
+          }
+
+          const entryDate = new Date($scope.editSessionData.entry);
+          const exitDate = new Date($scope.editSessionData.exit);
+          return entryDate < exitDate;
+        };
+
+        // Update available students
+        $scope.updateAvailableStudents = function() {
+          const selectedStudentIds = new Set(
+            $scope.sessions.flatMap(session => session.students)
+          );
+
+          $scope.availableStudents = $scope.students
+            .filter(student => !selectedStudentIds.has(student.id))
+            .map(student => ({ ...student, selected: true }));
+        };
+
+        // Save batch with validation
+        $scope.saveBatch = function() {
+          const selectedContentNames = $scope.selectedContents.map(c => c.name);
+
+          if (selectedContentNames.length === 0) {
+            alert("Please select at least one content item.");
+            return;
+          }
+
+          if ($scope.sessions.length === 0) {
+            alert("Please add at least one session.");
+            return;
+          }
+
+          const batchData = {
+            batchId: $scope.batchId,
+            contents: selectedContentNames,
+            sessions: $scope.sessions
+          };
+          console.log(batchData);
+
+          console.log('Saving batch:', batchData);
+          $http.post(`${baseUrl}save_theory/${$scope.batchId}/`, batchData)
+            .then(function(response) {
+              alert(response.data.message);
+              console.log($scope.selectedStaff);
+            })
+            .catch(function(error) {
+              alert("Error saving batch: " + (error.data?.message || "Unknown error"));
+            });
+        };
+      });
+  </script>
+</div>
+{% endblock content %}

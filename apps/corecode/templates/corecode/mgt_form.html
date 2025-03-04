@@ -31,6 +31,24 @@
 
       </form>
     </div>
+    <script>
+      const input = "{{object.time}}";
+      const [start, end] = input.split(" - ");
+
+      function convertTo24Hour(timeStr) {
+        const [time, meridian] = timeStr.split(":").map((val, idx, arr) =>
+            idx === arr.length - 1 ? val.match(/(AM|PM)/)[0] : val
+        );
+        const [hour, minute] = timeStr.replace(/(AM|PM)/, "").split(":").map(Number);
+
+        // Convert to 24-hour format
+        const hours = meridian === "PM" && hour < 12 ? hour + 12 : hour % 12;
+        return `${hours.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+    }
+
+    document.getElementById("id_start_time").value = convertTo24Hour(start);
+    document.getElementById("id_end_time").value = convertTo24Hour(end);
+    </script>
   </div>
 
 {% endblock content %}

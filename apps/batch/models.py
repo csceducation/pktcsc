@@ -6,6 +6,7 @@ from apps.students.models import Student
 from django.utils import timezone
 from django.urls import reverse
 from apps.corecode.models import Time
+from apps.corecode.utils import debug_info
 from apps.attendancev2.manager import AttendanceManager
 from csc_app.settings import db
 
@@ -49,27 +50,40 @@ class BatchModel(models.Model):
             students[str(student.enrol_no)] = "present"
         return students
         
+    def list_students(self,map_name=False):
+        students = []
+        for student in self.batch_students.filter(current_status="active"):#.work on only allowing students who are active even for batches
+            if map_name:
+                students.append({"id":str(student.enrol_no),"name":student.student_name}) 
+            else:
+                students.append(str(student.enrol_no)) 
+            
+        return students
     @staticmethod
     def map_name(enrol_no):
         student = Student.objects.get(enrol_no=enrol_no)
         return student.student_name
 
     def add_theory_attendance(self, content,entry_time,exit_time,student, status, date):
+        # change the parameter to  have student as dict & student.et and student.ext says the attendance of the student entry and exit time
         manager = AttendanceManager(db)
         manager.add_theory_attendance(self.id, student, date, status,content,entry_time,exit_time)
         
     
+    # def get_attendance_data(self, contents):
+    #     manager = AttendanceManager(db)
+    #     doc = manager.get_theory_data(self.id, contents)
+    #     if doc:
+    #         return doc
+    #     else:
+    #         return None
     def get_attendance_data(self, date):
         manager = AttendanceManager(db)
         doc = manager.get_theory_data(self.id, date)
         if doc:
-            for enrol_no, status in doc['students'].items():
-                doc['students'][enrol_no] = {
-                    'name': self.map_name(enrol_no),
-                    'status': status
-                }
-            #print(doc)
             return doc
+        else:
+            return None
 
     def finished_topics(self):
         manager = AttendanceManager(db)

@@ -454,15 +454,16 @@ padding: 10px;
     aside.active{
         transform: translateX(0);
     }
-    main{padding: 0 2rem;}
+    main{padding: 2rem;}
     main .timetable{
         position: relative;
-        margin: auto 0 0 0;
+        /* margin: auto 0 0 0; */
         width: 100%;
     }
     main .timetable table{
         width: 100%;
-        margin: 0;
+        /* margin: 0; */
+
     }
     .right{
         width: 100%;
@@ -476,7 +477,7 @@ padding: 10px;
     <header>
         <div class="logo" title="Computer Software College">
             <img src="https://content.jdmagicbox.com/comp/krishnagiri/d9/9999p4343.4343.160817161634.c1d9/catalogue/csc-computer-education-krishnagiri-ho-krishnagiri-computer-training-institutes-mmcytnevnv-250.jpg" alt="">
-            <h2 style="display:block">C<span class="danger">S</span>C Pudukkottai  </h2>
+            <h2 style="display:block">C<span class="danger">S</span>C {{company}}  </h2>
         </div>
         <div class="navbar">
             <a href="{% url 'public_student_profile' pk=object.id %}">
@@ -574,98 +575,45 @@ padding: 10px;
             </div>
  -->
  <!--modify here-->
+
+ {% for item in data %}
+ <div id="batch-{{item.batch.batch_id}}">
+ <center>
+ <h3 class="display-5 m-4" >{{ item.batch.batch_course.name }}</h3> <!-- Display the batch name as the heading -->
  
-<h2 align=center>Batch Attendance</h2>
-<div class="att" style="padding:20px;margin-top:5%;width: 100%;">
-    {% for batch_name, activities in data.items %}
-    <div class="att" style="padding:20px;margin-top:5%;">
-        <h2>{{ batch_name }}</h2>
-        <p>Staff: {{ activities.pop }}</p>
-        <br>
-    
-        <table style="width:100%">
-            <tr>
-                <th>Date</th>
-                <th>Content</th>
-                <th>Time</th>
-                <th>Status</th>
-            </tr>
-            {% for activity in activities %}
-                {% if 'staff' not in activity %}
-                <tr>
-                    <td>{{ activity.date }}</td>
-                    <td>{{ activity.content }}</td>
-                    <td>{{ activity.time_string }}</td>
-                    <td>{{ activity.student_status }}</td>
-                </tr>
-                {% endif %}
-            {% endfor %}
-        </table>
-    </div>
-    {% endfor %}
-    <!--modify above-->
-</div>
-
-<center style="margin-top: 20px;">
-    <h2>
-        Lab Activities
-    </h2>
+ <table style="font-size: 1.2rem;table-layout: auto; width: 100%;">
+     <thead>
+         <tr>
+             <th  style="min-width: 200px; white-space: nowrap;">Date</th>
+             <th  style="min-width: 200px; white-space: nowrap;">Entry Time</th>
+             <th  style="min-width: 200px; white-space: nowrap;">Exit Time</th>
+             <th  style="min-width: 200px; white-space: nowrap;">Staff</th>
+             <th  style="min-width: 200px; white-space: nowrap;">Content</th>
+         </tr>
+     </thead>
+     <tbody>
+         {% for session in item.sessions %}
+             <tr>
+                 <td>
+                     {{ session.date }}
+                 </td>
+                 <td id="time">
+                     {{ session.entry}}
+                 </td>
+                 <td  id="time">
+                     {{ session.exit}}
+                 </td>
+                 <td>{{ session.staff.name }}</td>
+                 <td>{{ session.content|join:", " }}</td> <!-- Join content list with commas -->
+             </tr>
+         {% endfor %}
+     </tbody>
+ </table>
 </center>
-
-<div class="att" style="padding:20px;margin-top:5%;margin-bottom: 20px;">
-  <table style="width:100%">
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Lab No</th>
-        <th>System No</th>
-        <th>Start Time</th>
-        <th>End Time</th>
-      </tr>
-    </thead>
-    <tbody id="attendanceBody"></tbody>
-  </table>
 </div>
-<script>
-    // Sample student data
-    const studentData = {{lab_data|safe}};
-  
-    const tableBody = document.getElementById('attendanceBody');
-    let prevDate = null;
-    let rowspan = 0;
-  
-    studentData.forEach(entry => {
-      const tr = document.createElement('tr');
-  
-      if (entry.date !== prevDate) {
-        prevDate = entry.date;
-        rowspan = studentData.filter(item => item.date === entry.date).length;
-        const dateCell = document.createElement('td');
-        dateCell.textContent = entry.date;
-        dateCell.rowSpan = rowspan;
-        tr.appendChild(dateCell);
-      }
-  
-      const labCell = document.createElement('td');
-      labCell.textContent = entry.lab_no;
-      tr.appendChild(labCell);
-  
-      const systemCell = document.createElement('td');
-      systemCell.textContent = entry.system_no;
-      tr.appendChild(systemCell);
-  
-      const startCell = document.createElement('td');
-      startCell.textContent = entry.start_time;
-      tr.appendChild(startCell);
-  
-      const endCell = document.createElement('td');
-      endCell.textContent = entry.end_time;
-      tr.appendChild(endCell);
-  
-      tableBody.appendChild(tr);
-    });
-  </script>
+{% endfor %}
 
+<!-- above here -->
 </main>
 
         <!-- <div class="right">
@@ -784,6 +732,35 @@ prevDay.onclick = function() {
 setData(day); //To set the data in the table on loading window.
 document.querySelector('.timetable div h2').innerHTML = "Today's Timetable"; //To prevent overwriting the heading on loading;
 
+    </script>
+
+
+<script>
+        document.addEventListener('DOMContentLoaded', () =>{
+            var fields = document.querySelectorAll('td[id^="time"]');
+            for(field of fields){
+                console.log(field);
+                field.innerText = new Date(field.innerText).toLocaleTimeString();
+            }
+
+        });
+
+
+        var hash = window.location.hash.slice(1);
+        // console.log(hash);
+        if(hash){
+            console.log(hash);
+            // Select all divs whose id starts with 'batch-'
+            var batchDivs = document.querySelectorAll('div[id^="batch-"]');
+
+            // Iterate over the selected div elements and log them
+            batchDivs.forEach(function(div) {
+                // console.log(div);  // You can replace this with any action you want to perform on the div
+                div.style = 'display:none';
+            });
+            document.getElementById(`batch-${hash}`).style = "display:block";
+
+        }
     </script>
 </body>
 </html>

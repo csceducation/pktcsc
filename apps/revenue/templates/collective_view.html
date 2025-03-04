@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+
+Day Account Statements
+
+{% endblock title %}
+
+
+{% block content %}
+<style>
+    .card-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 20px;
+    }
+    .card {
+        
+        border: 1px solid #ccc;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .card p {
+        margin: 0;
+        font-weight: 700;
+        font-size:large;
+    }
+    .card h3 {
+        margin-top: 0;
+    }
+    .crebtn {
+    margin:10px;
+    position: relative;
+    float: right;
+}
+    </style>
+<form method="post" action="{% url 'collective-view' %}">
+    {% csrf_token %}
+    <label for="date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" required>
+    <label for="date">End Date:</label>
+    <input type="date" id="end_date" name="end_date" required>
+    <button type="submit" class="btn-primary">Submit</button>
+</form>
+<div class="crebtn">
+    <button  class="btn-primary"><a href="{% url 'account-insert-create' %}" style="color:white;">Create statement</a> </button> 
+ </div>
+<h3 style="margin-top: 5%;">Account Statement from {{start_date}} to {{end_date}}</h3>
+
+<div class="card-container">
+    <div class="card">
+        <h3>Opening Balance</h3>
+        <p>{{ opening_balance }}</p>
+    </div>
+    <div class="card">
+        <h3>Income</h3>
+        <p>{{ income }}</p>
+    </div>
+    <div class="card">
+        <h3>Expense</h3>
+        <p>{{ expense }}</p>
+    </div>
+    <div class="card">
+        <h3>Closing Balance</h3>
+        <p>{{ closing_balance }}</p>
+    </div>
+</div>
+<div class="table-responsive">
+
+    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+        <thead class="thead-light">
+            <tr>
+                <th>Headings</th>
+                <th>Amount</th>
+            </tr>
+            </thead>
+        <tbody>
+            {% for heading, amount in heading_expenses.items %}
+            <tr>
+                  <td>{{ heading }}</td>
+
+                <td>{{ amount }}</td>
+
+             </tr>
+
+              {% endfor %}
+
+        </tbody>
+
+    </table>
+
+</div>
+
+
+
+{% endblock content %}

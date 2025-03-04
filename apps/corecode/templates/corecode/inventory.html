@@ -1,0 +1,143 @@
+{% extends 'base.html' %} {% load widget_tweaks %} 
+{% block title %}
+ Inventory
+{% endblock title %} 
+
+
+
+{% block breadcrumb %}
+<a class="btn btn-primary" href="#" data-toggle="modal" data-target="#modal1">
+  <i class="fa fa-plus"></i>
+  Add Stock
+</a>
+{% endblock breadcrumb %} {% block content %}
+<div class="row">
+  <div class="col-sm-12">
+    <table class="table table-bordered">
+      <tbody>
+        {% for object in object_list %}
+        <tr>
+          <td>{{ object.order_id }}</td>
+          <td>{{ object.order_date|date }}</td>
+          <td>
+            <a href="{% url 'inventory-update' object.id %}"><i class="fa fa-edit"></i></a>
+            <a href="{% url 'inventory-delete' object.id %}"><i class="fa fa-trash-alt"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modal1"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="exampleModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form
+        action="{% url 'inventory-create' %}"
+        method="POST"
+        id="create-form"
+      >
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add new Stock Data</h5>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %} {% for field in form %}
+          <div class="form-group">
+            {{field.label_tag}} {{ field|add_class:"form-control" }}
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  const books = {{books |safe}}; // use more inventory objects and get content type id to allow it for rendering
+  var list = null;
+  txtIn = document.querySelector("#id_items");
+  document.querySelector("#create-form > div.modal-body > div:nth-child(5) > label").style.display = 'none';
+  txtIn.style.display = 'none';
+  document.querySelector("#id_content_type").addEventListener('change',(e)=>{
+      id = e.target.value;
+      console.log(id);
+      console.log(typeof(id));
+        switch(id){
+          case '8':
+            list=books;
+            console.log(list);
+            break;
+          case '17':
+            list = [];
+            console.log(list);
+            break;
+        };
+      subjectList = document.createElement('div');
+      subjectList.setAttribute('id','lists');
+      subjectList.innerHTML='';
+      subjectList.innerHTML = "<hr><p class='display-6 font-weight-bolder'>items:<p id='alert' style='display:none' class='text-danger'>please enter quantity and select the books</p>";
+      list.forEach(subject => {
+          const subjectHTML = `
+              <div id="item">
+                  <input class="" type="checkbox" id="checkbox_${subject.id}">
+                  <label  for="checkbox_${subject.id}">${subject.name}</label>
+                  <input class="form-control w-25" type="number" id="quantity_${subject.id}" min="1" placeholder="Quantity">
+              </div>
+          `;
+          subjectList.innerHTML += subjectHTML;
+      });
+
+      document.querySelectorAll('#lists').forEach(e=>{e.remove();console.log(e)});
+      document.querySelector("#modal1 > div > div > form > div.modal-body > div:nth-child(4)").appendChild(subjectList);
+  })
+  document.getElementById('create-form').addEventListener('submit',(e)=>{
+    e.preventDefault();
+    let inputValidated = true;
+    const jsonData = {};
+    list.forEach(subject => {
+        const checkbox = document.getElementById(`checkbox_${subject.id}`);
+        const quantityInput = document.getElementById(`quantity_${subject.id}`);
+        if (checkbox.checked && quantityInput.value) {
+            jsonData[subject.id] = parseInt(quantityInput.value);
+        }else if(checkbox.checked && !quantityInput.value){
+          inputValidated = false;
+        }else if(!checkbox.checked && quantityInput.value){
+          inputValidated =false;
+        }
+    });
+    if(inputValidated){
+      console.log('ok');
+      // console.log(jsonData);
+      txtIn.value = JSON.stringify(jsonData);
+      e.target.submit();
+      document.getElementById('alert').style.display = 'none';
+    }else{
+      // console.log('not onay');
+      document.getElementById('alert').style.display = 'block ';
+    }
+  })
+</script>
+{% endblock content %}

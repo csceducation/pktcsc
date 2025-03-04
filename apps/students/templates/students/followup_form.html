@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+
+{% block content  %}
+<h3>Follow up Form Form</h3>
+<form method="post">
+    {% csrf_token %}
+    
+    <!-- Staff Name and ID (Single Input) -->
+    <div class="mb-3">
+        <label for="staff" class="form-label">Staff (Name and ID)</label>
+        <select id="staff" name="staff" class="form-select" required>
+            <option value="" selected disabled>Select Staff</option>
+            {% for staff in staffs %}
+                <option value="{{ staff.id }} {{staff.name}}">{{ staff.name }} (ID: {{ staff.id }})</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Date -->
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" id="date" name="date" class="form-control" required>
+    </div>
+    <!-- Join Date -->
+    <div class="mb-3">
+        <label for="join-date" class="form-label">Date</label>
+        <input type="date" id="join-date" name="join-date" class="form-control" required>
+    </div>
+
+    <!-- Notes -->
+    <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea id="notes" name="notes" class="form-control" rows="4" placeholder="Enter follow-up notes" required></textarea>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Submit</button>
+{% endblock content%}

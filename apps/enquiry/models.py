@@ -54,11 +54,10 @@ class Enquiry(models.Model):
         regex="^[0-9]{10,15}$", message="Entered mobile number isn't in a right format!"
     )
     mobile_number = models.CharField("Mobile Number",
-        validators=[mobile_num_regex], max_length=13, blank=True , null=True
-    )#null = False 
-    alternate_mobile_number = models.CharField("Alternate Mobile Number",
-        validators=[mobile_num_regex], max_length=13, blank=True , null=True
+        validators=[mobile_num_regex], max_length=13, blank=False , null=False,default=""
     )
+    alt_number = models.CharField("Alternate Mobile Number",
+        validators=[mobile_num_regex], max_length=13, blank=True , null=True)
     email = models.EmailField("Email", blank=True, default="" ,null=True)
     date_of_birth = models.DateField("Date of Birth",default=timezone.now)
     gender = models.CharField("Gender", max_length=10, choices=GENDER_CHOICES, default="male")

@@ -1,8 +1,8 @@
 import pymongo
 import datetime
-from csc_app.settings import mongo_uri
+from csc_app.settings import mongo_uri,db
+from apps.corecode.utils import debug_info
 from apps.staffs.models import Staff
-
 class AttendanceManager:
     def __init__(self,mongodb_database):
         self.db_name = mongodb_database
@@ -109,6 +109,12 @@ class AttendanceManager:
 
     def get_theory_data(self,batch,date):
         doc = self.theory_collection.find_one({"batch_id":batch,"date":date})
+        
+        
+    def get_theory_data_v2(self,batch,contents):
+        print({"batch_id":batch,"content":{"$elemMatch":{"$eq":contents}}})
+        doc = self.theory_collection.find_one({"batch_id":batch,"content":{"$elemMatch":{"$in":contents}}})
+        # debug_info(doc)
         return doc
 
 
@@ -216,9 +222,262 @@ class AttendanceManager:
         #print(documents)
         return documents
         
+class AttendanceManagerV2:
+    def __init__(self,mongodb_database):
+        self.db_name = mongodb_database
+        self.client = pymongo.MongoClient(mongo_uri)
+        self.db = self.client[self.db_name]
+        self.staff_collection = self.db['staff_collection']
+        self.student_collection = self.db['student_collection']
+        self.lab_collection = self.db['lab_collection']
+        self.theory_collection = self.db['theory_collection']
+        
+    #------------------theory----------------
+    
+    def get_batch_data(self,batch_id):
+        data = self.theory_collection.find({"batch_id":batch_id})
+        result = []
+        for doc in data:
+            doc.pop('_id','batch_id')
+            result.append(doc)
+            
+        return result
+    
+    def get_theory_data(self,batch,contents):
+        doc = self.theory_collection.find_one({"batch_id":batch,"content":{"$elemMatch":{"$in":contents}}})
+        # debug_info(doc)
+        doc.pop('_id')
+        return doc
 
 
+    def add_data(self,batch_id,data):
+        debug_info({'batch_id':batch_id,'content':{"$in":data['contents']}})
+        doc = self.theory_collection.find_one({'batch_id':batch_id,'content':{"$in":data['contents']}})
+        
+        if doc:
+            self.theory_collection.update_one(
+                {'batch_id':batch_id,'content':{"$in":data['contents']}},
+                {'$set':{'sessions':data['sessions'],'content':data['contents']}}
+            )
+            return 'data updated'
+        else:
+            self.theory_collection.insert_one(
+                {'batch_id':batch_id,
+                 'content':data['contents'],
+                 'sessions':data['sessions']
+                }
+            )
+            
+            return 'data inserted'
+        
+    def get_finished_topics(self,batch_id,with_date=False):
+        docs = self.theory_collection.find({'batch_id':batch_id})
+        if not with_date:
+            result = []
+            for doc in docs:
+                result.append(doc['content'])
+            
+            return result
+        else:
+            result = {}
+            for doc in docs:
+                print(doc)
+                result[doc['sessions'][0]['date']] = doc['content']
+                
+            return result
+    
+    def get_finished_topics_batch(self,batch_id):
+        docs = self.theory_collection.find({'batch_id':batch_id})
+        result1 = []
+        result2 = []
+        for doc in docs:
+            # debug_info(doc)
+            result1.append(doc['content'])
+            result2.append({"content":doc['content'],"staff":Staff.objects.get(id=doc['sessions'][0]['staff']),'date':doc['sessions'][0]['date']})
+        return result1,result2
+        
+    #----------lab---------------
+    def get_lab_data(self,lab_no,date):
+        # debug_info({"date":str(date),"lab_id":lab_no})
+        # docs = self.lab_collection.find({"date":str(date),"lab_id":lab_no})
+        # res = []
+        # for doc in docs:
+        #     doc.pop('_id')
+        #     res.append(doc)
+        # return res
+        pipeline = [
+            {"$match": {"lab_id": lab_no, "date": date}},
+            {"$unwind": "$data"},
+            {
+                "$project": {
+                    "key": {"$concat": ["$system_no", "_", {"$substr": ["$data.start", 0, 2]}]},
+                    "students": "$data.students",
+                }
+            },
+            {"$group": {"_id": "null", "result": {"$push": {"k": "$key", "v": "$students"}}}},
+            {"$replaceRoot": {"newRoot": {"$arrayToObject": "$result"}}},
+        ]
+        
+        doc = self.lab_collection.aggregate(pipeline)
+        # debug_info(doc)
+        return doc
+    
+    def roughwork(self,num,data):
+        doc = self.theory_collection.find_one({"num":num})
+        result = doc
+        if not doc:
+            self.theory_collection.insert_one({"num":num})
+        else:
+            result = self.theory_collection.update_one({"num":num},{"$set":{"data":data}})
+        return result
+        
+    # def put_lab_data(self,lab_no,date,data):
+    #     doc = self.lab_collection.find_one({"date":date,"lab_no":lab_no,"system_no":data['system_no']})
+    #     if doc:
+    #         self.lab_collection.update_one(
+    #             {"date": date,"lab_no":lab_no,"system_no":data['system_no']},
+    #             {"$set": {f"data.{data['student_id']}": {
+    #                     "start":data['start'],
+    #                     "stop":data['stop']
+    #                     }
+    #                 }
+    #              }
+    #         )
+    #         return 'data updated'
+    #     else:
+    #         doc = {
+    #             "date":date,
+    #             "lab_no":lab_no,
+    #             "system_no":data['system_no'],
+    #             "data":{
+    #                 data['student_id']:{
+    #                     "start":data['start'],
+    #                     "stop":data['stop']
+    #                 }
+    #             }
+    #         }
+    #         self.lab_collection.insert_one(doc)
+    #         return 'data inserted'
+        
+    def put_lab_data(self, lab_no, date, sys, time, student, staff):
+        doc = self.lab_collection.find_one({"lab_id": lab_no, "system_no": sys, "date": date})
+        
+        if not doc:
+            # Create a new document
+            doc = {
+                "lab_id": lab_no,
+                "system_no": sys,
+                "date": date,
+                "data": [
+                    {
+                        "start": time['start'],
+                        "end": time['end'],
+                        "students": [student],
+                        "incharges": [staff]
+                    }
+                ]
+            }
+            self.db.lab_collection.insert_one(doc)
+            return "data inserted",True
+        else:
+            for ele in doc['data']:
+               if ele['start'] == time['start'] and ele['end'] == time['end'] and len(ele['students']) >= 2:
+                    return "Maximum Student Limit Reached for the system",False
+            
+            result = self.db.lab_collection.update_one(
+                {
+                    "lab_id": lab_no,
+                    "system_no": sys,
+                    "date": date,
+                    "data": {
+                        "$elemMatch": {
+                            "start": time['start'],
+                            "end": time['end']
+                        }
+                    }
+                },
+                {
+                    "$addToSet": {
+                        "data.$.students": student,  
+                        "data.$.incharges": staff
+                    }
+                }
+            )
+            
+            if result.modified_count > 0:
+                return "data updated",True
+            
+            new_time_slot = {
+                "start": time['start'],
+                "end": time['end'],
+                "students": [student],
+                "incharges": [staff]
+            }
+            result = self.db.lab_collection.update_one(
+                {
+                    "lab_id": lab_no,
+                    "system_no": sys,
+                    "date": date
+                },
+                {
+                    "$push": {
+                        "data": new_time_slot
+                    }
+                }
+            )
+            
+            if result.modified_count > 0:
+                return "new time slot added",True
+        
+        return "no changes made",True
 
+  
+    def get_lab_staff(self, lab_no, date, sys, time):
+        # Query to find the lab document with the matching time slot
+        doc = self.lab_collection.find_one(
+            {
+                "lab_id": lab_no,
+                "system_no": sys,
+                "date": date,
+                "data": {
+                    "$elemMatch": {
+                        "start": time['start'],
+                        "end": time['end']
+                    }
+                }
+            }
+        )
+        
+        if doc:
+            # Extract the staff list for the matching time slot
+            for time_slot in doc['data']:
+                if time_slot['start'] == time['start'] and time_slot['end'] == time['end']:
+                    return time_slot['incharges']  # Return the list of staff (incharges)
+        
+        return "No staff found for the given time slot."
+
+    def get_lab_system_data(self,lab_no,date,sys,start,end):
+        data = self.lab_collection.find_one({"lab_id": lab_no,"system_no":sys,"date": date})
+        debug_info({"lab_id": lab_no,"system_no":sys,"date": date})
+        debug_info(data)
+        if data:
+            for doc in data['data']:
+                if doc['start'] == start and doc['end'] == end:
+                    return doc['students']
+            else:
+                return []
+        else:
+            return []
+        
+    def delete_lab_data(self,lab_no,date,sys,time,student):
+        result = self.db.lab_collection.update_one({"lab_id": lab_no,"system_no":sys,"date": date,'data.start': time['start'],'data.end':time['end']},
+                        {
+                            "$pull": {
+                                'data.$.students': student
+                            }
+                        }
+                    );
+    
 class DailyAttendanceManager:
     def __init__(self, mongodb_database):
         self.db_name = mongodb_database
@@ -317,7 +576,7 @@ class DailyAttendanceManager:
         query = {
             'date': {
                 '$gte': datetime.datetime(year, month, 1).strftime('%Y-%m-%d'),
-                '$lt': datetime.datetime(year, month + 1, 1).strftime('%Y-%m-%d') if month < 12 else datetime(year + 1, 1, 1).strftime('%Y-%m-%d')
+                '$lt': datetime.datetime(year, month + 1, 1).strftime('%Y-%m-%d') if month < 12 else datetime.datetime(year + 1, 1, 1).strftime('%Y-%m-%d')
             }
         }
         print(query)
@@ -341,3 +600,14 @@ class DailyAttendanceManager:
                     continue  
 
         return staff_details
+    
+    
+    
+        
+             
+        
+        
+        
+            
+        
+    

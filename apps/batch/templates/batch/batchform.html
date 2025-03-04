@@ -13,9 +13,21 @@
 
 
 {% block content %}
+
+<!-- {{subject_end_date}} -->
 <form action="" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
-
+  {% if form.errors %}
+        <div class="form-errors">
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
   {% include 'corecode/form_snippet.html' %}
   
   {% if object %}
@@ -24,5 +36,68 @@
     <input type="submit" class="btn btn-primary" value="Add new Batch">
   {% endif %}
 </form>
+
+<script>
+  const subjectHrs = {{subject_end_date}};
+  let startDate = document.getElementById('id_batch_start_date');
+  let endDate = document.getElementById('id_batch_end_date');
+  let subject = document.getElementById('id_batch_course');
+  let options = [];
+  const staffField = document.getElementById('id_batch_staff');
+  const staffFieldLabel = document.querySelectorAll('label[for^="id_batch_staff"]')[0];
+  staffFieldLabel.style.display = 'none';
+  staffField.style.display = 'none';
+  document.getElementById('id_batch_status').options[1].selected = true;
+
+  subject.addEventListener('change',(event)=>{
+    // console.log(subject.value);
+    // console.log(subjectHrs[String(subject.value)]);
+    endDate.value = calculateDate(startDate.value,subjectHrs[String(subject.value)]).toISOString().split('T')[0];
+      load_staff(subject.value);
+  })
+
+
+  startDate.addEventListener('change',(event)=>{
+    if(subject.value){
+      endDate.value = calculateDate(startDate.value,subjectHrs[String(subject.value)]).toISOString().split('T')[0];
+    }
+  });
+
+  function calculateDate(startDate, numberOfDays) {
+      let resultDate = new Date(startDate);
+      let daysAdded = 0;
+
+      while (daysAdded < numberOfDays) {
+          // Move to the next day
+          resultDate.setDate(resultDate.getDate() + 1);
+
+          // If it's not Sunday, count it
+          if (resultDate.getDay() !== 0) { // 0 represents Sunday
+              daysAdded++;
+          }
+      }
+
+      return resultDate;
+  }
+  function load_staff(subject){
+    fetch(`${window.location.origin}/staff/get_staffs/${subject}`)
+      .then((res)=>{return res.json();})
+      .then((data)=>{
+        let staffs = data.map((staff)=>{
+        return `<option value="${staff.id}">${staff.name} ${staff.id}</option>`;
+      });
+      if(staffs.length == 0){
+        // staffFieldLabel.style.display = 'block';
+        staffFieldLabel.innerHTML = 'Staff not available for this subject';
+        // staffField.style.display = 'none';
+      }
+      staffField.innerHTML = staffs.join('');
+      staffField.style.display = 'block';
+      staffFieldLabel.style.display = 'block';
+      console.log(staffs);
+      })
+      .catch((err)=>{console.log(err);return [];});
+  }
+</script>
 
 {% endblock content %}

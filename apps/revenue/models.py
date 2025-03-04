@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Sum
 import math
 from ..finance import models as mod
+from ..corecode import models as coremod
 
 
 class revenue(models.Model):
@@ -44,3 +45,22 @@ class GST(models.Model):
         gst = round((price * self.percent) / (100+self.percent),2)
         amount = round(price - gst,2)
         return (amount,gst)
+    
+
+class Accounts(models.Model):
+    A_CHOICES = (
+        ('Credit','Credit'),
+        ('Debit','Debit'),
+    )
+    Date = models.DateField()
+    Type = models.CharField(max_length=10, choices=A_CHOICES,default="Debit")
+    Heading = models.ForeignKey(coremod.AccountHeading, on_delete=models.DO_NOTHING)
+    Description = models.TextField()
+    Amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return self.Heading.name
+    
+class DailyAccountData(models.Model):
+    date = models.DateField(auto_now_add=True)
+    opening_balance = models.DecimalField(max_digits=10, decimal_places=2)

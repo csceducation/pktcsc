@@ -3,6 +3,7 @@
 {% block title %}staffs{% endblock title %}
 
 {% block breadcrumb %}
+<a href="{% url 'staff-inactive-list' %}" class="btn btn-primary">Inactive Staffs</a>
 <a class="btn btn-primary" href="{% url 'staff-create' %}"><i
     class="fas fa-plus"></i> New staff</a>
 {% endblock breadcrumb %}
@@ -17,7 +18,6 @@
         <th>Gender</th>
         <th>Qualification</th>
         <th>Mobile Phone Number</th>
-        <th>Status</th>
       </tr>
     </thead>
     <tbody>
@@ -29,7 +29,6 @@
           <td>{{ staff.get_gender_display}}</td>
           <td>{{ staff.quali }}</td>
           <td>{{ staff.mobile_number}}</td>
-          <td>{{ staff.get_current_status_display}}</td>
         </tr>
       {% endfor %}
 

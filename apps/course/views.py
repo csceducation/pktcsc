@@ -190,9 +190,9 @@ class ExamCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             response = super().form_valid(form)
             return response
     
-def delete_book_log(request, pk,book_name):
+def delete_book_log(request, pk,bpk):
     enquiry_log = get_object_or_404(CourseBookModel, pk=pk)
-    book_to_remove = enquiry_log.book_name.filter(name=book_name).first()
+    book_to_remove = enquiry_log.book_name.get(id=bpk)
     if book_to_remove:
         enquiry_log.book_name.remove(book_to_remove)
     referring_url = request.META.get('HTTP_REFERER', '/')

@@ -8,39 +8,73 @@
 {% endblock breadcrumb %}
 
 {% block content %}
-  <div class="table-responsive">
-    <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
-      <thead class="thead-light">
-        <tr>
-          <th>S/N</th>
-          <th>Batch Id</th>
-          <th>Batch status</th>
-          <th>Batch started On</th>
-          <th>Batch course</th>
-          <th>Batch Staff</th>
-          <th>Batch Timing</th>
-          <th>Total Student</th>
-          <th></th>
+<div class="table-responsive">
+  <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+    <thead class="thead-light">
+      <tr>
+        <th>S/N</th>
+        <th>Batch Id</th>
+        <th>Batch status</th>
+        <th>Batch started On</th>
+        <th>Batch course</th>
+        <th>Batch Staff</th>
+        <th>Batch Timing</th>
+        <th>Total Student</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      {% for batch in batches %}
+        <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
+          <td>{{ forloop.counter}}</td>
+          <td>{{ batch.batch_id}}</td>
+          <td>{{ batch.batch_status}}</td>
+          <td>{{ batch.batch_start_date}}</td>
+          <td>{{ batch.batch_course}}</td>
+          <td>{{ batch.batch_staff}}</td>
+          <td>{{ batch.batch_timing}}</td>
+          <td>{{ batch.total_student}}</td>
         </tr>
-      </thead>
-      <tbody>
+      {% endfor %}
 
-        {% for batch in batches %}
-          <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
-            <td>{{ forloop.counter}}</td>
-            <td>{{ batch.batch_id}}</td>
-            <td>{{ batch.batch_status}}</td>
-            <td>{{ batch.batch_start_date}}</td>
-            <td>{{ batch.batch_course}}</td>
-            <td>{{ batch.batch_staff}}</td>
-            <td>{{ batch.batch_timing}}</td>
-            <td>{{ batch.total_student}}</td>
-          </tr>
-        {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% if expired_batches %}
+<h2>Batches out of date</h2>
+<div class="table-responsive">
+  <table id="studenttable" class="table table-bordered table-hover" data-page-length='100'>
+    <thead class="thead-light">
+      <tr>
+        <th>S/N</th>
+        <th>Batch Id</th>
+        <th>Batch status</th>
+        <th>Batch started On</th>
+        <th>Batch course</th>
+        <th>Batch Staff</th>
+        <th>Batch Timing</th>
+        <th>Total Student</th>
+      </tr>
+    </thead>
+    <tbody>
 
-      </tbody>
-    </table>
-  </div>
+      {% for batch in expired_batches %}
+        <tr class='clickable-row' data-href="{% url 'batch_detail' batch.id%}">
+          <td>{{ forloop.counter}}</td>
+          <td>{{ batch.batch_id}}</td>
+          <td>{{ batch.batch_status}}</td>
+          <td>{{ batch.batch_start_date}}</td>
+          <td>{{ batch.batch_course}}</td>
+          <td>{{ batch.batch_staff}}</td>
+          <td>{{ batch.batch_timing}}</td>
+          <td>{{ batch.total_student}}</td>
+        </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>
+</div>
+{% endif %}
 {% endblock content %}
 
 

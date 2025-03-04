@@ -2,6 +2,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.db import IntegrityError
 from django.forms import widgets
 from django.shortcuts import render
+from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
@@ -9,14 +10,33 @@ from django import forms
 import os
 from .models import Staff
 from django.utils.decorators import method_decorator
-from apps.corecode.views import staff_student_entry_restricted,different_user_restricted
+from apps.corecode.views import staff_student_entry_restricted,different_user_restricted,student_entry_resricted
 from apps.corecode.models import User
 from apps.batch.models import BatchModel
 from apps.attendancev2.manager import DailyAttendanceManager
 from csc_app.settings import db
 from datetime import datetime
-class StaffListView(ListView):
+from django.contrib.auth.mixins import LoginRequiredMixin
+# from .seirializers import StaffSerializer
+# class StaffListView(ListView):
+#     model = Staff
+
+@method_decorator(student_entry_resricted(),name='dispatch')
+class StaffListView(LoginRequiredMixin, ListView):
     model = Staff
+    
+    def slist(request):
+        template_name = "staffs/staff_list.html"
+        return render(request, template_name , context={"object_list":Staff.objects.filter(current_status="active")})
+
+@method_decorator(student_entry_resricted(),name='dispatch')
+class StaffInActiveListView(LoginRequiredMixin, ListView):
+    model = Staff
+    
+    def slist(request):
+        template_name = "staffs/staff_list_inactive.html"
+        return render(request, template_name , context={"object_list":Staff.objects.filter(current_status="inactive")})
+
 
 @method_decorator(different_user_restricted(),name='dispatch')
 class StaffDetailView(DetailView):
@@ -70,7 +90,7 @@ class StaffCreateView(SuccessMessageMixin, CreateView):
                 }
                 
             if user_data['username']:
-                user, created = User.objects.get_or_create(username=user_data['username'])
+                user, created = User.objects.get_or_create(username=user_data['username'],is_staff=True)
                 if not created:
                     form.add_error('username', 'Username already exists.')
                     return self.form_invalid(form)
@@ -135,3 +155,21 @@ class StaffUpdateView(SuccessMessageMixin, UpdateView):
 class StaffDeleteView(DeleteView):
     model = Staff
     success_url = reverse_lazy("staff-list")
+
+
+
+def get_staff_subjects(request,subject_id):
+    staffs = Staff.objects.filter(known_subjects__id=subject_id)
+    # print(staffs)
+    # print(StaffSerializer(staffs,many=True).data)
+    data = []
+    if staffs.exists():
+        for staff in staffs:
+            data.append({
+                "id":staff.id,
+                "name":staff.name,
+                "known_subjects":list(staff.known_subjects.values_list('id',flat=True))
+            })
+    return JsonResponse(data,safe=False)
+    
+    
